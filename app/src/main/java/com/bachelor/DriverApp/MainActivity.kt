@@ -2,6 +2,7 @@ package com.bachelor.DriverApp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.bachelor.DriverApp.ui.login.LoginFragment
 import com.bachelor.DriverApp.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {
@@ -9,9 +10,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
+                    .replace(R.id.container, LoginFragment()) // Start app at LOGIN FRAGMENT
                     .commitNow()
         }
     }
