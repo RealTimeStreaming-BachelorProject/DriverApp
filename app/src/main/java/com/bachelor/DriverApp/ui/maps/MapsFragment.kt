@@ -2,19 +2,24 @@ package com.bachelor.DriverApp.ui.maps
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Point
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Interpolator
+import android.view.animation.LinearInterpolator
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.bachelor.DriverApp.R
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.Projection
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -62,8 +67,8 @@ class MapsFragment : Fragment() {
                 for (location in locationResult.locations){
                     mapFragment?.getMapAsync{ googleMap ->
                         val coordinates = LatLng(location.latitude, location.longitude)
-                        mapMarker.position = coordinates
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLng(coordinates))
+                        animateMarker(mapMarker, coordinates, false, googleMap)
+                        googleMap.animateCamera(CameraUpdateFactory.newLatLng(coordinates))
                     }
                 }
             }
@@ -90,10 +95,11 @@ class MapsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync { googleMap ->
-            googleMap.animateCamera( CameraUpdateFactory.zoomTo( 17.0f ) );
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
             mapMarker = googleMap.addMarker(
                 MarkerOptions()
-                    .position(LatLng(latitude, longitude)))
+                    .position(LatLng(latitude, longitude))
+            )
         }
     }
 
@@ -124,5 +130,41 @@ class MapsFragment : Fragment() {
             locationCallback,
             Looper.getMainLooper()
         )
+    }
+
+    fun animateMarker(
+        marker: Marker, toPosition: LatLng,
+        hideMarker: Boolean,
+        googleMap: GoogleMap
+    ) {
+        val handler = Handler()
+        val start = SystemClock.uptimeMillis()
+        val proj: Projection = googleMap.getProjection()
+        val startPoint: Point = proj.toScreenLocation(marker.position)
+        val startLatLng = proj.fromScreenLocation(startPoint)
+        val duration: Long = 500
+        val interpolator: Interpolator = LinearInterpolator()
+        handler.post(object : Runnable {
+            override fun run() {
+                val elapsed = SystemClock.uptimeMillis() - start
+                val t: Float = interpolator.getInterpolation(
+                    elapsed.toFloat()
+                            / duration
+                )
+                val lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude
+                val lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude
+                marker.setPosition(LatLng(lat, lng))
+                if (t < 1.0) {
+                    // Post again 16ms later.
+                    handler.postDelayed(this, 16)
+                } else {
+                    if (hideMarker) {
+                        marker.isVisible = false
+                    } else {
+                        marker.isVisible = true
+                    }
+                }
+            }
+        })
     }
 }
