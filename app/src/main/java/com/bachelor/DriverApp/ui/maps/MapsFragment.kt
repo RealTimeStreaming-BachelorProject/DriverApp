@@ -11,9 +11,9 @@ import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.observe
 import com.bachelor.DriverApp.R
 import com.bachelor.DriverApp.data.viewmodel.MapsViewModel
-import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.Projection
@@ -51,26 +51,21 @@ class MapsFragment : Fragment() {
             googleMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
             mapMarker = googleMap.addMarker(
                 MarkerOptions()
-                    .position(LatLng(mapsViewModel.latitude.value!!, mapsViewModel.longitude.value!!))
+                    .position(LatLng(mapsViewModel.latLng.value!!.latitude, mapsViewModel.latLng.value!!.longitude))
             )
         }
 
-        // Google Maps on location update callback
-        var onLocationUpdate = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
-                locationResult ?: return
-                for (location in locationResult.locations){
-                    mapFragment?.getMapAsync{ googleMap ->
-                        val coordinates = LatLng(location.latitude, location.longitude)
-                        animateMarker(mapMarker, coordinates, false, googleMap)
-                        googleMap.animateCamera(CameraUpdateFactory.newLatLng(coordinates))
-                        // Send to Socket IO
-                    }
+        mapsViewModel.latLng.observe(requireActivity()) { langLng ->
+            run {
+                mapFragment?.getMapAsync { googleMap ->
+                    animateMarker(mapMarker, langLng, false, googleMap)
+                    googleMap.animateCamera(CameraUpdateFactory.newLatLng(langLng))
                 }
+
             }
         }
 
-        mapsViewModel.startLocationUpdates(onLocationUpdate)
+        mapsViewModel.startLocationUpdates()
     }
 
     fun animateMarker(

@@ -9,12 +9,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.bachelor.DriverApp.data.Config
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.engineio.client.transports.WebSocket
@@ -24,18 +21,15 @@ import java.net.URISyntaxException
 
 class MapsViewModel(application: Application): AndroidViewModel(application) {
 
-    private val _longitude = MutableLiveData<Double>(0.0);
-    val longitude: LiveData<Double> get() = _longitude;
-
-    private val _latitude = MutableLiveData<Double>(0.0);
-    val latitude: LiveData<Double> get() = _latitude;
+    private val _latLng = MutableLiveData<LatLng>(LatLng(0.0, 0.0));
+    val latLng: LiveData<LatLng> get() = _latLng
 
     private val context = application.applicationContext
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private lateinit var mSocket: Socket
 
-    fun startLocationUpdates(locationCallback: LocationCallback) {
+    fun startLocationUpdates() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
         if (ActivityCompat.checkSelfPermission(
@@ -53,9 +47,23 @@ class MapsViewModel(application: Application): AndroidViewModel(application) {
 
         var locationRequest = LocationRequest()
         locationRequest.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        locationRequest.interval = 100
+        locationRequest.interval = 3000
         locationRequest.fastestInterval = 100
         locationRequest.smallestDisplacement = 1f
+
+        var locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult ?: return
+                for (location in locationResult.locations) {
+                    val newLatLng = LatLng(location.latitude, location.longitude)
+                    _latLng.postValue(newLatLng)
+
+                    val gson = Gson()
+                    val obj = JSONObject(gson.toJson(CoordEvent(arrayOf(location.latitude, location.longitude))))
+                    mSocket.emit("new_coordinates", obj)
+                }
+            }
+        }
 
 
         fusedLocationClient.requestLocationUpdates(
@@ -86,3 +94,4 @@ class MapsViewModel(application: Application): AndroidViewModel(application) {
 }
 
 data class AuthEvent (val token: String)
+data class CoordEvent (val coordinate: Array<Double>)
