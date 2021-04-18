@@ -1,15 +1,20 @@
 package com.bachelor.DriverApp
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.bachelor.DriverApp.ui.login.LoginFragment
 import android.view.MenuItem
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.bachelor.DriverApp.ui.main.MainFragment
 import com.bachelor.DriverApp.ui.maps.MapsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
+
+    private var REQUEST_CODE = 1
 
     // Shortcut to change fragment
     fun gotoFragment(fragment: Fragment) {
@@ -30,6 +35,26 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         if (savedInstanceState == null) {
             gotoFragment(LoginFragment())
         }
+
+        // START Check permissions
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            println("No permissions :-((((((((((((((((((((((((((((((((((")
+            ActivityCompat.requestPermissions(
+                this, arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ), REQUEST_CODE
+            )
+            return
+        }
+        // END Check permissions
     }
 
     // Handle click on bottom navigation
