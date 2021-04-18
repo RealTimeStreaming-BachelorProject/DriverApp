@@ -1,8 +1,8 @@
-package com.bachelor.DriverApp.data.models
+package com.bachelor.DriverApp.data.models.loginservice
 
 import com.google.gson.annotations.SerializedName
 
-class APILoginResponse {
+class LoginResponse {
 
     @SerializedName("statusCode")
     var statusCode: Int = 0

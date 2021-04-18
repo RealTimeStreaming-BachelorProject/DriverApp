@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">DriverApp</string>
-    <!-- Strings related to login -->
     <string name="prompt_username">Username</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in or register</string>
@@ -11,4 +10,6 @@
     <string name="login_failed">"Login failed"</string>
     <string name="menu_main">Main</string>
     <string name="menu_map">Map</string>
+    <string name="menu_packages">Packages</string>
+    <string name="menu_scanner">Scanner</string>
 </resources>

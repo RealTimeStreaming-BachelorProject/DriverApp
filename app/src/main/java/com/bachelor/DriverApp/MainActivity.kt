@@ -7,6 +7,8 @@ import android.view.MenuItem
 import androidx.fragment.app.Fragment
 import com.bachelor.DriverApp.ui.main.MainFragment
 import com.bachelor.DriverApp.ui.maps.MapsFragment
+import com.bachelor.DriverApp.ui.packages.PackagesFragment
+import com.bachelor.DriverApp.ui.scanner.ScannerFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
@@ -41,6 +43,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             nextFragment = MainFragment()
         } else if (id.equals(R.id.action_map)) {
             nextFragment = MapsFragment()
+        } else if (id.equals(R.id.action_packages)) {
+            nextFragment = PackagesFragment()
+        } else if (id.equals(R.id.action_scanner)) {
+            nextFragment = ScannerFragment()
         }
 
         if (nextFragment == null) return false // Don't change fragment

@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bachelor.DriverApp.data.requestbodies.LoginRequestBody
+import com.bachelor.DriverApp.data.requestbodies.loginservice.LoginRequestBody
 import com.bachelor.DriverApp.data.repository.ServiceBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

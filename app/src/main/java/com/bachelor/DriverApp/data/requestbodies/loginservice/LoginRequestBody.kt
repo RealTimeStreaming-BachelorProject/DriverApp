@@ -1,4 +1,4 @@
-package com.bachelor.DriverApp.data.requestbodies
+package com.bachelor.DriverApp.data.requestbodies.loginservice
 
 import com.google.gson.annotations.SerializedName
 

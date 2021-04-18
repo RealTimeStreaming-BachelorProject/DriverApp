@@ -37,7 +37,7 @@ class LoginFragment : Fragment() {
         val usernameEditText = view.findViewById<EditText>(R.id.username)
         val passwordEditText = view.findViewById<EditText>(R.id.password)
         val loginButton = view.findViewById<Button>(R.id.login)
-        loadingProgressBar = view.findViewById<ProgressBar>(R.id.loading)
+        loadingProgressBar = view.findViewById(R.id.loading)
 
         loginButton.setOnClickListener {
             loadingProgressBar.visibility = View.VISIBLE
@@ -59,6 +59,7 @@ class LoginFragment : Fragment() {
         loadingProgressBar.visibility = View.INVISIBLE
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+        // TODO: switch view
     }
 
     private fun showLoginFailed(message: String) {
