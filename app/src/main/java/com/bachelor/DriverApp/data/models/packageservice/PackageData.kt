@@ -1,6 +1,8 @@
 package com.bachelor.DriverApp.data.models.packageservice
 
-class PackageData(receiverAddress: String, weightKg: Int, packageId: String) {
+import java.util.*
+
+class PackageData(receiverAddress: String, weightKg: Int, packageId: UUID, expectedDeliveryTime: Date) {
     var receiverAddress: String = receiverAddress
         get() {
             return field
@@ -15,7 +17,21 @@ class PackageData(receiverAddress: String, weightKg: Int, packageId: String) {
         set(value) {
             field = value
         }
-    var packageId: String = packageId
+    var packageId: UUID = packageId
+        get() {
+            return field
+        }
+        set(value) {
+            field = value
+        }
+    var expectedDeliveryTime: Date = expectedDeliveryTime
+        get() {
+            return field
+        }
+        set(value) {
+            field = value
+        }
+    var delivered: Boolean = false
         get() {
             return field
         }

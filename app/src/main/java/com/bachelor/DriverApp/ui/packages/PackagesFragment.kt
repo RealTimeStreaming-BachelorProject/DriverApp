@@ -5,30 +5,36 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bachelor.DriverApp.R
-import com.bachelor.DriverApp.data.viewmodel.LoginServiceViewModel
 import com.bachelor.DriverApp.data.viewmodel.PackageServiceViewModel
+import com.bachelor.DriverApp.ui.adapters.PackageAdapter
 
 class PackagesFragment : Fragment() {
 
-    private lateinit var packageServiceViewModel: PackageServiceViewModel
-
+    private var packageServiceViewModel: PackageServiceViewModel = PackageServiceViewModel
+    private lateinit var recyclerAdapter: PackageAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_packages, container, false)
-    }
+        val root = inflater.inflate(R.layout.fragment_packages, container, false)
+        val recyclerView = root.findViewById<RecyclerView>(R.id.packages)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        packageServiceViewModel = ViewModelProvider(this).get(PackageServiceViewModel::class.java)
+        recyclerView.layoutManager = LinearLayoutManager(root.context)
+        recyclerView.setHasFixedSize(true)
 
+        recyclerAdapter = PackageAdapter(packageServiceViewModel.packages.value!!)
+        recyclerView.adapter = recyclerAdapter
 
+        packageServiceViewModel.packages.observe(viewLifecycleOwner) { packages ->
+            recyclerAdapter.setPackages(packages)
+        }
+
+        return root
     }
 }

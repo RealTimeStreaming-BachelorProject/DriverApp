@@ -11,9 +11,14 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.lifecycle.observe
+import com.bachelor.DriverApp.MainActivity
 
 import com.bachelor.DriverApp.R
+import com.bachelor.DriverApp.config.DriverData
 import com.bachelor.DriverApp.data.viewmodel.LoginServiceViewModel
+import com.bachelor.DriverApp.ui.main.MainFragment
+import com.google.android.material.bottomnavigation.BottomNavigationItemView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class LoginFragment : Fragment() {
 
@@ -59,7 +64,21 @@ class LoginFragment : Fragment() {
         loadingProgressBar.visibility = View.INVISIBLE
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
-        // TODO: switch view
+
+        switchToMainFragment()
+
+        var navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
+        if (navBar != null) {
+            navBar.visibility = View.VISIBLE
+        }
+    }
+
+    private fun switchToMainFragment() {
+        val mainFragment = MainFragment()
+        val transaction = parentFragmentManager.beginTransaction()
+        transaction.replace(R.id.fragment_container, mainFragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 
     private fun showLoginFailed(message: String) {

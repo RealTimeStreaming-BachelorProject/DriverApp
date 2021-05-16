@@ -4,11 +4,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.auth0.android.jwt.JWT
+import com.bachelor.DriverApp.config.DriverData
 import com.bachelor.DriverApp.data.requestbodies.loginservice.LoginRequestBody
 import com.bachelor.DriverApp.data.repository.ServiceBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.sql.Driver
+import java.util.*
 
 class LoginServiceViewModel : ViewModel() {
     private val loginService = ServiceBuilder().getLoginService()
@@ -22,15 +26,22 @@ class LoginServiceViewModel : ViewModel() {
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
-            val jsonBody: LoginRequestBody = LoginRequestBody(username, password)
+            val jsonBody = LoginRequestBody(username, password)
             withContext(Dispatchers.IO) {
-                val loginResponse = loginService.login(jsonBody)
-                if (loginResponse.isSuccessful) {
-                    // TODO:
-                    _successLoginMessage.postValue(loginResponse.body()!!.message)
-                } else {
-                    _failureLoginMessage.postValue(loginResponse.message())
+                try {
+                    val loginResponse = loginService.login(jsonBody)
+                    if (loginResponse.isSuccessful) {
+                        _successLoginMessage.postValue(loginResponse.body()?.message)
+                        var jwt = JWT(loginResponse.body()?.token!!)
+                        DriverData.JWT = loginResponse.body()?.token!!
+                        DriverData.driverID = UUID.fromString(jwt.getClaim("driverID").asString())
+                    } else {
+                        _failureLoginMessage.postValue(loginResponse.message())
+                    }
+                } catch (e: Exception) {
+                    _failureLoginMessage.postValue("Server Error")
                 }
+
             }
 
         }
