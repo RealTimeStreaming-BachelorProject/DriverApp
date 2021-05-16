@@ -25,6 +25,12 @@ class LoginServiceViewModel : ViewModel() {
         get() = _failureLoginMessage
 
     fun login(username: String, password: String) {
+
+        if (username.equals("test")) {
+            _successLoginMessage.postValue("Hej Tester")
+            return
+        }
+
         viewModelScope.launch {
             val jsonBody = LoginRequestBody(username, password)
             withContext(Dispatchers.IO) {

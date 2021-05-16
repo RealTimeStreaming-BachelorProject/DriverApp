@@ -12,9 +12,9 @@ import com.bachelor.DriverApp.config.Urls
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
+import io.socket.client.IO
 import io.socket.client.Socket
-import kotlinx.coroutines.Dispatchers.IO
-import okhttp3.WebSocket
+import io.socket.engineio.client.transports.WebSocket
 import org.json.JSONObject
 import java.net.URISyntaxException
 
