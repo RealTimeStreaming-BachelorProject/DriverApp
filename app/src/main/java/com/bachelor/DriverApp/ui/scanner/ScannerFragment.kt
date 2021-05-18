@@ -9,7 +9,6 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import com.bachelor.DriverApp.R
-import com.bachelor.DriverApp.config.DriverData
 import com.bachelor.DriverApp.data.viewmodel.PackageServiceViewModel
 
 class ScannerFragment : Fragment() {
@@ -22,8 +21,20 @@ class ScannerFragment : Fragment() {
     ): View? {
 
         val root = inflater.inflate(R.layout.fragment_scanner, container, false)
+
         root.findViewById<Button>(R.id.packagePickUp).setOnClickListener {
-            onDriverPickUpScan()
+            packageServiceViewModel.registerNewPackage()
+        }
+
+        root.findViewById<Button>(R.id.packageDelivery).setOnClickListener {
+            if (packageServiceViewModel.packageInteractionCounter < packageServiceViewModel.packages.value?.size!!) {
+                val packageToDeliver = packageServiceViewModel.packages.value?.get(packageServiceViewModel.packageInteractionCounter++)
+
+                packageServiceViewModel.driverDelivery(packageToDeliver?.packageId)
+            }
+            else {
+                Toast.makeText(root.context, "No packages to deliver", Toast.LENGTH_SHORT).show()
+            }
         }
 
         packageServiceViewModel.getErrorMessage().observe(this, Observer {
@@ -31,15 +42,4 @@ class ScannerFragment : Fragment() {
         })
         return root;
     }
-
-    private fun onDriverPickUpScan() {
-        packageServiceViewModel.registerNewPackage()
-        if (DriverData.driverID != null) {
-            packageServiceViewModel.driverPickUp(packageServiceViewModel.getRandomValidPackageID(),
-                DriverData.driverID!!
-            )
-        }
-
-    }
-
 }

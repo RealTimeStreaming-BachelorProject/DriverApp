@@ -1,10 +1,9 @@
 package com.bachelor.DriverApp.data.viewmodel
 
-import android.annotation.SuppressLint
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bachelor.DriverApp.config.DriverData
 import com.bachelor.DriverApp.config.Urls.FAKE_SCENARIO
 import com.bachelor.DriverApp.data.models.packageservice.PackageData
 import com.bachelor.DriverApp.data.repository.ServiceBuilder
@@ -30,6 +29,8 @@ object PackageServiceViewModel : ViewModel() {
             return field
         }
 
+    var packageInteractionCounter = 0;
+
     private val errorMessage = SingleLiveEvent<String>()
     fun getErrorMessage(): SingleLiveEvent<String> {
         return errorMessage
@@ -39,11 +40,16 @@ object PackageServiceViewModel : ViewModel() {
         this.packages.value = ArrayList()
     }
 
-    fun driverPickUp(packageID: UUID, driverId: UUID) {
+    fun driverPickUp(packageID: UUID) {
+        if (DriverData.driverID == null) {
+            errorMessage.postValue("Invalid driverID, make sure you are logged in properly")
+            return
+        }
         viewModelScope.launch {
-            val jsonBody = DriverInRouteRequestBody(arrayListOf(packageID), driverId, FAKE_SCENARIO)
+            val jsonBody = DriverInRouteRequestBody(arrayListOf(packageID),
+                DriverData.driverID!!, FAKE_SCENARIO)
             try {
-                val inRouteResponse = withContext(Dispatchers.IO){
+                val inRouteResponse = withContext(Dispatchers.IO) {
                     packageService.inRoute(jsonBody)
                 }
                 if (inRouteResponse.isSuccessful) {
@@ -61,7 +67,7 @@ object PackageServiceViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val packageDetailsResponse = withContext(Dispatchers.IO) {
-                        packageService.getPackageDetails(packageID.toString())
+                    packageService.getPackageDetails(packageID.toString())
                 }
                 if (packageDetailsResponse.isSuccessful) {
                     val responseBody = packageDetailsResponse.body()!!
@@ -82,16 +88,25 @@ object PackageServiceViewModel : ViewModel() {
         }
     }
 
-    fun driverDelivery(packageIds: ArrayList<String>, driverId: String) {
+    fun driverDelivery(packageId: UUID?) {
+        if (DriverData.driverID == null) {
+            errorMessage.postValue("Invalid driverID, make sure you are logged in properly")
+            return
+        }
         viewModelScope.launch {
-            val jsonBody = DriverDeliveryRequestBody(packageIds, driverId, FAKE_SCENARIO)
+            val packageIds = Array(1) { packageId }
+
+            val jsonBody = DriverDeliveryRequestBody(packageIds, DriverData.driverID.toString(), FAKE_SCENARIO)
             try {
                 val deliveryResponse = withContext(Dispatchers.IO) {
                     packageService.deliver(jsonBody)
                 }
                 if (deliveryResponse.isSuccessful) {
                     for (packageID in packageIds) {
-                        packages.value?.find { packageData -> packageData.packageId.equals(packageID) }
+                        val deliveredPackage = packages.value?.find { packageData -> packageData.packageId == packageID }
+                        if (deliveredPackage != null) {
+                            deliveredPackage.delivered = true
+                        }
                     }
                 } else {
                     errorMessage.postValue(deliveryResponse.message())
@@ -106,6 +121,10 @@ object PackageServiceViewModel : ViewModel() {
     // this logic happens when someone orders an item from a webshop
     // this is only for demo and testing purposes
     fun registerNewPackage() {
+        if (DriverData.driverID == null) {
+            errorMessage.postValue("Invalid driverID, make sure you are logged in properly")
+            return
+        }
         viewModelScope.launch { // runs on the UI thread by default
             val jsonBody = RegisterPackageRequestBody()
             try {
@@ -113,7 +132,11 @@ object PackageServiceViewModel : ViewModel() {
                     packageService.register(jsonBody)
                 }
                 if (registerPackageResponse.isSuccessful) {
-                    validPackageIDs.add(registerPackageResponse.body()?.packageID!!);
+                    validPackageIDs.add(registerPackageResponse.body()?.packageID!!)
+
+                    driverPickUp(
+                        getRandomValidPackageID()
+                    )
                 } else {
                     errorMessage.postValue(registerPackageResponse.message())
                 }

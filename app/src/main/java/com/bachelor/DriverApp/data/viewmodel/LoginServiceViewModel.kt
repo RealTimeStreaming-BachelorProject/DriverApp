@@ -16,35 +16,40 @@ import java.util.*
 
 class LoginServiceViewModel : ViewModel() {
     private val loginService = ServiceBuilder().getLoginService()
-    private val _successLoginMessage = MutableLiveData<String>()
-    val successLoginMessage: LiveData<String>
-        get() = _successLoginMessage
 
-    private val _failureLoginMessage = MutableLiveData<String>()
-    val failLoginMessage: LiveData<String>
-        get() = _failureLoginMessage
+    private val successMessage = SingleLiveEvent<String>()
+    fun getSuccessMessage(): SingleLiveEvent<String> {
+        return successMessage
+    }
+
+    private val errorMessage = SingleLiveEvent<String>()
+    fun getErrorMessage(): SingleLiveEvent<String> {
+        return errorMessage
+    }
 
     fun login(username: String, password: String) {
 
-        if (username.equals("test")) {
-            _successLoginMessage.postValue("Hej Tester")
+        if (username == "test") {
+            successMessage.postValue("Hej Tester")
             return
         }
 
         viewModelScope.launch {
             val jsonBody = LoginRequestBody(username, password)
             try {
-                val loginResponse = loginService.login(jsonBody)
+                val loginResponse = withContext(Dispatchers.IO) {
+                    loginService.login(jsonBody)
+                }
                 if (loginResponse.isSuccessful) {
-                    _successLoginMessage.postValue(loginResponse.body()?.message)
-                    var jwt = JWT(loginResponse.body()?.token!!)
+                    successMessage.postValue(loginResponse.body()?.message)
+                    val jwt = JWT(loginResponse.body()?.token!!)
                     DriverData.JWT = loginResponse.body()?.token!!
                     DriverData.driverID = UUID.fromString(jwt.getClaim("driverID").asString())
                 } else {
-                    _failureLoginMessage.postValue(loginResponse.message())
+                    errorMessage.postValue(loginResponse.message())
                 }
             } catch (e: Exception) {
-                _failureLoginMessage.postValue("Server Error")
+                errorMessage.postValue("Could not contact Login Server")
             }
         }
     }

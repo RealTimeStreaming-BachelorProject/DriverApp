@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import com.bachelor.DriverApp.MainActivity
 
@@ -52,12 +53,13 @@ class LoginFragment : Fragment() {
             )
         }
 
-        loginServiceViewModel.successLoginMessage.observe(viewLifecycleOwner) { message ->
+        loginServiceViewModel.getSuccessMessage().observe(this, Observer { message ->
             successfulLogin(message)
-        }
-        loginServiceViewModel.failLoginMessage.observe(viewLifecycleOwner) { message ->
-            showLoginFailed(message)
-        }
+        })
+
+        loginServiceViewModel.getErrorMessage().observe(this, Observer { message ->
+            Toast.makeText(view.context, message, Toast.LENGTH_SHORT).show()
+        })
     }
 
     private fun successfulLogin(message: String) {
