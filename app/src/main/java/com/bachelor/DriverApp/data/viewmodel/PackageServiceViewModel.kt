@@ -1,5 +1,7 @@
 package com.bachelor.DriverApp.data.viewmodel
 
+import android.annotation.SuppressLint
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +17,7 @@ import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.collections.ArrayList
 
-object PackageServiceViewModel :ViewModel() {
+object PackageServiceViewModel : ViewModel() {
 
     private val packageService = ServiceBuilder().getPackageService()
 
@@ -28,6 +30,11 @@ object PackageServiceViewModel :ViewModel() {
             return field
         }
 
+    private val errorMessage = SingleLiveEvent<String>()
+    fun getErrorMessage(): SingleLiveEvent<String> {
+        return errorMessage
+    }
+
     init {
         this.packages.value = ArrayList()
     }
@@ -35,25 +42,30 @@ object PackageServiceViewModel :ViewModel() {
     fun driverPickUp(packageID: UUID, driverId: UUID) {
         viewModelScope.launch {
             val jsonBody = DriverInRouteRequestBody(arrayListOf(packageID), driverId, FAKE_SCENARIO)
-            withContext(Dispatchers.IO) {
-                val inRouteResponse = packageService.inRoute(jsonBody)
+            try {
+                val inRouteResponse = withContext(Dispatchers.IO){
+                    packageService.inRoute(jsonBody)
+                }
                 if (inRouteResponse.isSuccessful) {
                     addPackageDetails(packageID)
                 } else {
-
+                    errorMessage.postValue(inRouteResponse.message())
                 }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
-
         }
     }
 
     private fun addPackageDetails(packageID: UUID) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val packageDetailsResponse = packageService.getPackageDetails(packageID.toString())
+            try {
+                val packageDetailsResponse = withContext(Dispatchers.IO) {
+                        packageService.getPackageDetails(packageID.toString())
+                }
                 if (packageDetailsResponse.isSuccessful) {
-                    var responseBody = packageDetailsResponse.body()!!
-                    var packageData = PackageData(
+                    val responseBody = packageDetailsResponse.body()!!
+                    val packageData = PackageData(
                         responseBody.receiverAddress,
                         responseBody.weightKg,
                         responseBody.packageID,
@@ -62,27 +74,30 @@ object PackageServiceViewModel :ViewModel() {
 
                     packages.value?.add(packageData)
                 } else {
-                    // TODO: Handle errors
-                    print("Error")
+                    errorMessage.postValue(packageDetailsResponse.message())
                 }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
-
         }
     }
 
     fun driverDelivery(packageIds: ArrayList<String>, driverId: String) {
         viewModelScope.launch {
             val jsonBody = DriverDeliveryRequestBody(packageIds, driverId, FAKE_SCENARIO)
-            withContext(Dispatchers.IO) {
-                val deliveryResponse = packageService.deliver(jsonBody)
+            try {
+                val deliveryResponse = withContext(Dispatchers.IO) {
+                    packageService.deliver(jsonBody)
+                }
                 if (deliveryResponse.isSuccessful) {
                     for (packageID in packageIds) {
                         packages.value?.find { packageData -> packageData.packageId.equals(packageID) }
                     }
                 } else {
-                    // TODO: handle errors
-                    print("Error2")
+                    errorMessage.postValue(deliveryResponse.message())
                 }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
         }
     }
@@ -91,21 +106,24 @@ object PackageServiceViewModel :ViewModel() {
     // this logic happens when someone orders an item from a webshop
     // this is only for demo and testing purposes
     fun registerNewPackage() {
-        viewModelScope.launch {
+        viewModelScope.launch { // runs on the UI thread by default
             val jsonBody = RegisterPackageRequestBody()
-            withContext(Dispatchers.IO) {
-                val registerPackage = packageService.register(jsonBody)
-                if (registerPackage.isSuccessful) {
-                    validPackageIDs.add(registerPackage.body()?.packageID!!);
-                } else {
-                    // TODO: handle errors
-                    print("Error2")
+            try {
+                val registerPackageResponse = withContext(Dispatchers.IO) {
+                    packageService.register(jsonBody)
                 }
+                if (registerPackageResponse.isSuccessful) {
+                    validPackageIDs.add(registerPackageResponse.body()?.packageID!!);
+                } else {
+                    errorMessage.postValue(registerPackageResponse.message())
+                }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
         }
     }
 
-    fun getRandomValidPackageID() : UUID {
+    fun getRandomValidPackageID(): UUID {
         return validPackageIDs.random()
     }
 

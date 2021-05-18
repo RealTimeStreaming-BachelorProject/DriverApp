@@ -33,23 +33,19 @@ class LoginServiceViewModel : ViewModel() {
 
         viewModelScope.launch {
             val jsonBody = LoginRequestBody(username, password)
-            withContext(Dispatchers.IO) {
-                try {
-                    val loginResponse = loginService.login(jsonBody)
-                    if (loginResponse.isSuccessful) {
-                        _successLoginMessage.postValue(loginResponse.body()?.message)
-                        var jwt = JWT(loginResponse.body()?.token!!)
-                        DriverData.JWT = loginResponse.body()?.token!!
-                        DriverData.driverID = UUID.fromString(jwt.getClaim("driverID").asString())
-                    } else {
-                        _failureLoginMessage.postValue(loginResponse.message())
-                    }
-                } catch (e: Exception) {
-                    _failureLoginMessage.postValue("Server Error")
+            try {
+                val loginResponse = loginService.login(jsonBody)
+                if (loginResponse.isSuccessful) {
+                    _successLoginMessage.postValue(loginResponse.body()?.message)
+                    var jwt = JWT(loginResponse.body()?.token!!)
+                    DriverData.JWT = loginResponse.body()?.token!!
+                    DriverData.driverID = UUID.fromString(jwt.getClaim("driverID").asString())
+                } else {
+                    _failureLoginMessage.postValue(loginResponse.message())
                 }
-
+            } catch (e: Exception) {
+                _failureLoginMessage.postValue("Server Error")
             }
-
         }
     }
 
