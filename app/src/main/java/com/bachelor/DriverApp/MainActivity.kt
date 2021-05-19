@@ -1,18 +1,23 @@
 package com.bachelor.DriverApp
 
 import android.Manifest
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.bachelor.DriverApp.ui.login.LoginFragment
 import android.view.MenuItem
+import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import com.bachelor.DriverApp.broadcastreceivers.BatteryCallback
+import com.bachelor.DriverApp.broadcastreceivers.LowBatteryReceiver
 import com.bachelor.DriverApp.ui.main.MainFragment
 import com.bachelor.DriverApp.ui.maps.MapsFragment
 import com.bachelor.DriverApp.ui.packages.PackagesFragment
 import com.bachelor.DriverApp.ui.scanner.ScannerFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -47,7 +52,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            println("No permissions :-((((((((((((((((((((((((((((((((((")
+            println("No permissions :-(")
             ActivityCompat.requestPermissions(
                 this, arrayOf(
                     Manifest.permission.ACCESS_FINE_LOCATION,
@@ -57,6 +62,26 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             return
         }
         // END Check permissions
+
+        val parentLayout = findViewById<View>(android.R.id.content)
+
+        // register receivers
+        val filter = IntentFilter()
+        filter.addAction("android.intent.action.BATTERY_LOW")
+        filter.addAction("android.intent.action.BATTERY_OKAY")
+        val receiver = LowBatteryReceiver()
+        receiver.registerBatteryCallback(object : BatteryCallback {
+            override fun onLowBattery() {
+                // TODO: Stop gps
+                Snackbar.make(parentLayout, "Battery at 15 %, stopping GPS", Snackbar.LENGTH_INDEFINITE).show()
+            }
+
+            override fun onOkayBattery() {
+                // TODO: start GPS up again
+                Snackbar.make(parentLayout, "Battery okay, starting GPS again", Snackbar.LENGTH_SHORT).show()
+            }
+        })
+        registerReceiver(receiver, filter);
     }
 
     // Handle click on bottom navigation
