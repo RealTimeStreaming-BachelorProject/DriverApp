@@ -27,8 +27,8 @@ class ScannerFragment : Fragment() {
         }
 
         root.findViewById<Button>(R.id.packageDelivery).setOnClickListener {
-            if (packageServiceViewModel.packageInteractionCounter < packageServiceViewModel.packages.value?.size!!) {
-                val packageToDeliver = packageServiceViewModel.packages.value?.get(packageServiceViewModel.packageInteractionCounter++)
+            if (packageServiceViewModel.deliveredPackageCounter < packageServiceViewModel.packages.value?.size!!) {
+                val packageToDeliver = packageServiceViewModel.packages.value?.get(packageServiceViewModel.deliveredPackageCounter++)
 
                 packageServiceViewModel.driverDelivery(packageToDeliver?.packageId)
             }

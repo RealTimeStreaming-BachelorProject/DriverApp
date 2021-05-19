@@ -1,7 +1,5 @@
 package com.bachelor.DriverApp.data.viewmodel;
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auth0.android.jwt.JWT
@@ -11,7 +9,6 @@ import com.bachelor.DriverApp.data.repository.ServiceBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.sql.Driver
 import java.util.*
 
 class LoginServiceViewModel : ViewModel() {
@@ -28,9 +25,11 @@ class LoginServiceViewModel : ViewModel() {
     }
 
     fun login(username: String, password: String) {
-
         if (username == "test") {
             successMessage.postValue("Hej Tester")
+            DriverData.JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ik1vbmtleUFwZSIsImRyaXZlcklEIjoiMjVlZmNkMzctMjBmYy00YTczLWFmNjUtMDg1MDRhNGVkMDc0IiwiZXhwIjoxNjI0MDAyMzE1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDA1IiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTAwNSJ9.A777Mbp_kS-lzbhhbOIsAOdGdbpRnFWCo8bU1_GAcLk"
+            DriverData.driverID = UUID.fromString("25efcd37-20fc-4a73-af65-08504a4ed074")
+            DriverData.testUser = true
             return
         }
 
@@ -53,5 +52,4 @@ class LoginServiceViewModel : ViewModel() {
             }
         }
     }
-
 }

@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.random.Random
 
 object PackageServiceViewModel : ViewModel() {
 
@@ -29,7 +30,7 @@ object PackageServiceViewModel : ViewModel() {
             return field
         }
 
-    var packageInteractionCounter = 0;
+    var deliveredPackageCounter = 0;
 
     private val errorMessage = SingleLiveEvent<String>()
     fun getErrorMessage(): SingleLiveEvent<String> {
@@ -41,8 +42,8 @@ object PackageServiceViewModel : ViewModel() {
     }
 
     fun driverPickUp(packageID: UUID) {
-        if (DriverData.driverID == null) {
-            errorMessage.postValue("Invalid driverID, make sure you are logged in properly")
+        if (DriverData.testUser) {
+            addPackageDetails(packageID)
             return
         }
         viewModelScope.launch {
@@ -64,6 +65,16 @@ object PackageServiceViewModel : ViewModel() {
     }
 
     private fun addPackageDetails(packageID: UUID) {
+        if (DriverData.testUser) {
+            val packageData = PackageData(
+                "Test Adresse nr. 42 5000 Odense C",
+                12,
+                packageID,
+                Date(2021, 6, 1, Random.nextInt(8, 17),Random.nextInt(0, 60))
+            )
+            packages.value?.add(packageData)
+            return
+        }
         viewModelScope.launch {
             try {
                 val packageDetailsResponse = withContext(Dispatchers.IO) {
@@ -89,8 +100,11 @@ object PackageServiceViewModel : ViewModel() {
     }
 
     fun driverDelivery(packageId: UUID?) {
-        if (DriverData.driverID == null) {
-            errorMessage.postValue("Invalid driverID, make sure you are logged in properly")
+        if (DriverData.testUser) {
+            val deliveredPackage = packages.value?.find { packageData -> packageData.packageId == packageId }
+            if (deliveredPackage != null) {
+                deliveredPackage.delivered = true
+            }
             return
         }
         viewModelScope.launch {
@@ -121,22 +135,23 @@ object PackageServiceViewModel : ViewModel() {
     // this logic happens when someone orders an item from a webshop
     // this is only for demo and testing purposes
     fun registerNewPackage() {
-        if (DriverData.driverID == null) {
-            errorMessage.postValue("Invalid driverID, make sure you are logged in properly")
+        if (DriverData.testUser) {
+            val packageId = UUID.randomUUID()
+            validPackageIDs.add(packageId)
+            driverPickUp(packageId)
             return
         }
-        viewModelScope.launch { // runs on the UI thread by default
+        viewModelScope.launch {
             val jsonBody = RegisterPackageRequestBody()
             try {
                 val registerPackageResponse = withContext(Dispatchers.IO) {
                     packageService.register(jsonBody)
                 }
                 if (registerPackageResponse.isSuccessful) {
-                    validPackageIDs.add(registerPackageResponse.body()?.packageID!!)
+                    val packageId = registerPackageResponse.body()?.packageID!!
+                    validPackageIDs.add(packageId)
 
-                    driverPickUp(
-                        getRandomValidPackageID()
-                    )
+                    driverPickUp(packageId)
                 } else {
                     errorMessage.postValue(registerPackageResponse.message())
                 }
@@ -145,9 +160,4 @@ object PackageServiceViewModel : ViewModel() {
             }
         }
     }
-
-    fun getRandomValidPackageID(): UUID {
-        return validPackageIDs.random()
-    }
-
 }
