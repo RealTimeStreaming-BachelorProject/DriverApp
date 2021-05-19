@@ -20,11 +20,13 @@ import com.bachelor.DriverApp.data.viewmodel.LoginServiceViewModel
 import com.bachelor.DriverApp.ui.main.MainFragment
 import com.google.android.material.bottomnavigation.BottomNavigationItemView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 
 class LoginFragment : Fragment() {
 
     private lateinit var loginServiceViewModel: LoginServiceViewModel
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var rootView: View
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,7 +39,7 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loginServiceViewModel = ViewModelProvider(this).get(LoginServiceViewModel::class.java)
-
+        rootView = view
         // TODO: check if JWT is present
 
         val usernameEditText = view.findViewById<EditText>(R.id.username)
@@ -58,14 +60,13 @@ class LoginFragment : Fragment() {
         })
 
         loginServiceViewModel.getErrorMessage().observe(this, Observer { message ->
-            Toast.makeText(view.context, message, Toast.LENGTH_SHORT).show()
+            showLoginFailed(message)
         })
     }
 
     private fun successfulLogin(message: String) {
         loadingProgressBar.visibility = View.INVISIBLE
-        val appContext = context?.applicationContext ?: return
-        Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
 
         switchToMainFragment()
 
@@ -85,7 +86,6 @@ class LoginFragment : Fragment() {
 
     private fun showLoginFailed(message: String) {
         loadingProgressBar.visibility = View.INVISIBLE
-        val appContext = context?.applicationContext ?: return
-        Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
     }
 }
