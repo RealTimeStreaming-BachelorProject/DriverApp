@@ -1,6 +1,7 @@
 package com.bachelor.DriverApp
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -16,7 +17,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
-    private var REQUEST_CODE = 1
+    private var REQUEST_CODE_LOCATION = 2300
 
     // Shortcut to change fragment
     fun gotoFragment(fragment: Fragment) {
@@ -38,25 +39,19 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             gotoFragment(LoginFragment())
         }
 
-        // START Check permissions
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            println("No permissions :-((((((((((((((((((((((((((((((((((")
-            ActivityCompat.requestPermissions(
-                this, arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ), REQUEST_CODE
-            )
-            return
-        }
-        // END Check permissions
+        requestPermissions()
+
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        println(requestCode)
+        println(permissions.toString())
+        println(grantResults.toString())
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     // Handle click on bottom navigation
@@ -79,4 +74,26 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         gotoFragment(nextFragment)
         return true
     }
+
+    private fun requestPermissions() {
+
+        if (
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            ||
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+
+        )
+        {
+            println("Permissions missing. Requesting permission.")
+            ActivityCompat.requestPermissions(
+                this, arrayOf(
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION),
+                    REQUEST_CODE_LOCATION
+            )
+        }
+
+
+    }
+
 }

@@ -1,5 +1,9 @@
 package com.bachelor.DriverApp.ui.maps
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
@@ -14,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
 import com.bachelor.DriverApp.R
 import com.bachelor.DriverApp.data.viewmodel.MapsViewModel
+import com.bachelor.DriverApp.services.LocationService
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.Projection
@@ -48,7 +53,7 @@ class MapsFragment : Fragment() {
 
         // Initial Google Maps
         mapFragment?.getMapAsync { googleMap ->
-            googleMap.animateCamera(CameraUpdateFactory.zoomTo(17.0f));
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(15.0f));
             mapMarker = googleMap.addMarker(
                 MarkerOptions()
                     .position(LatLng(mapsViewModel.latLng.value!!.latitude, mapsViewModel.latLng.value!!.longitude))
@@ -57,15 +62,31 @@ class MapsFragment : Fragment() {
 
         mapsViewModel.latLng.observe(requireActivity()) { langLng ->
             run {
-                mapFragment?.getMapAsync { googleMap ->
-                    animateMarker(mapMarker, langLng, false, googleMap)
-                    googleMap.animateCamera(CameraUpdateFactory.newLatLng(langLng))
-                }
+
 
             }
         }
 
-        mapsViewModel.startLocationUpdates()
+        val intent = Intent(requireContext(), LocationService::class.java)
+        requireContext().startForegroundService(intent)
+        listenForLocationUpdates()
+    }
+
+    private fun listenForLocationUpdates() {
+        val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(arg0: Context?, arg1: Intent) {
+                val newLatLng = arg1.extras!!.get("latlng")
+                updateMapLocation(newLatLng as LatLng)
+            }
+        }
+        requireContext().registerReceiver(broadcastReceiver, IntentFilter("new_latlng"))
+    }
+
+    private fun updateMapLocation(latLng: LatLng) {
+        mapFragment?.getMapAsync { googleMap ->
+            animateMarker(mapMarker, latLng, false, googleMap)
+            googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng))
+        }
     }
 
     fun animateMarker(

@@ -12,4 +12,5 @@
     <string name="menu_map">Map</string>
     <string name="menu_packages">Packages</string>
     <string name="menu_scanner">Scanner</string>
+    <string name="sending_location">Sending Location</string>
 </resources>
