@@ -5,8 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.observe
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bachelor.DriverApp.R
@@ -31,9 +30,9 @@ class PackagesFragment : Fragment() {
         recyclerAdapter = PackageAdapter(packageServiceViewModel.packages.value!!)
         recyclerView.adapter = recyclerAdapter
 
-        packageServiceViewModel.packages.observe(viewLifecycleOwner) { packages ->
+        packageServiceViewModel.packages.observe(viewLifecycleOwner, Observer { packages ->
             recyclerAdapter.setPackages(packages)
-        }
+        })
 
         return root
     }

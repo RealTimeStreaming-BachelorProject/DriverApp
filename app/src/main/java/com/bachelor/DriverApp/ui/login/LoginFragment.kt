@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import com.bachelor.DriverApp.MainActivity
 
@@ -19,11 +20,13 @@ import com.bachelor.DriverApp.data.viewmodel.LoginServiceViewModel
 import com.bachelor.DriverApp.ui.main.MainFragment
 import com.google.android.material.bottomnavigation.BottomNavigationItemView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 
 class LoginFragment : Fragment() {
 
     private lateinit var loginServiceViewModel: LoginServiceViewModel
     private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var rootView: View
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,7 +39,7 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         loginServiceViewModel = ViewModelProvider(this).get(LoginServiceViewModel::class.java)
-
+        rootView = view
         // TODO: check if JWT is present
 
         val usernameEditText = view.findViewById<EditText>(R.id.username)
@@ -52,18 +55,18 @@ class LoginFragment : Fragment() {
             )
         }
 
-        loginServiceViewModel.successLoginMessage.observe(viewLifecycleOwner) { message ->
+        loginServiceViewModel.getSuccessMessage().observe(this, Observer { message ->
             successfulLogin(message)
-        }
-        loginServiceViewModel.failLoginMessage.observe(viewLifecycleOwner) { message ->
+        })
+
+        loginServiceViewModel.getErrorMessage().observe(this, Observer { message ->
             showLoginFailed(message)
-        }
+        })
     }
 
     private fun successfulLogin(message: String) {
         loadingProgressBar.visibility = View.INVISIBLE
-        val appContext = context?.applicationContext ?: return
-        Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
 
         switchToMainFragment()
 
@@ -83,7 +86,6 @@ class LoginFragment : Fragment() {
 
     private fun showLoginFailed(message: String) {
         loadingProgressBar.visibility = View.INVISIBLE
-        val appContext = context?.applicationContext ?: return
-        Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
     }
 }

@@ -1,7 +1,5 @@
 package com.bachelor.DriverApp.data.viewmodel;
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.auth0.android.jwt.JWT
@@ -11,46 +9,47 @@ import com.bachelor.DriverApp.data.repository.ServiceBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.sql.Driver
 import java.util.*
 
 class LoginServiceViewModel : ViewModel() {
     private val loginService = ServiceBuilder().getLoginService()
-    private val _successLoginMessage = MutableLiveData<String>()
-    val successLoginMessage: LiveData<String>
-        get() = _successLoginMessage
 
-    private val _failureLoginMessage = MutableLiveData<String>()
-    val failLoginMessage: LiveData<String>
-        get() = _failureLoginMessage
+    private val successMessage = SingleLiveEvent<String>()
+    fun getSuccessMessage(): SingleLiveEvent<String> {
+        return successMessage
+    }
+
+    private val errorMessage = SingleLiveEvent<String>()
+    fun getErrorMessage(): SingleLiveEvent<String> {
+        return errorMessage
+    }
 
     fun login(username: String, password: String) {
-
-        if (username.equals("test")) {
-            _successLoginMessage.postValue("Hej Tester")
+        if (username == "test") {
+            successMessage.postValue("Hej Tester")
+            DriverData.JWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Ik1vbmtleUFwZSIsImRyaXZlcklEIjoiMjVlZmNkMzctMjBmYy00YTczLWFmNjUtMDg1MDRhNGVkMDc0IiwiZXhwIjoxNjI0MDAyMzE1LCJpc3MiOiJodHRwczovL2xvY2FsaG9zdDo1MDA1IiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NTAwNSJ9.A777Mbp_kS-lzbhhbOIsAOdGdbpRnFWCo8bU1_GAcLk"
+            DriverData.driverID = UUID.fromString("25efcd37-20fc-4a73-af65-08504a4ed074")
+            DriverData.testUser = true
             return
         }
 
         viewModelScope.launch {
             val jsonBody = LoginRequestBody(username, password)
-            withContext(Dispatchers.IO) {
-                try {
-                    val loginResponse = loginService.login(jsonBody)
-                    if (loginResponse.isSuccessful) {
-                        _successLoginMessage.postValue(loginResponse.body()?.message)
-                        var jwt = JWT(loginResponse.body()?.token!!)
-                        DriverData.JWT = loginResponse.body()?.token!!
-                        DriverData.driverID = UUID.fromString(jwt.getClaim("driverID").asString())
-                    } else {
-                        _failureLoginMessage.postValue(loginResponse.message())
-                    }
-                } catch (e: Exception) {
-                    _failureLoginMessage.postValue("Server Error")
+            try {
+                val loginResponse = withContext(Dispatchers.IO) {
+                    loginService.login(jsonBody)
                 }
-
+                if (loginResponse.isSuccessful) {
+                    successMessage.postValue(loginResponse.body()?.message)
+                    val jwt = JWT(loginResponse.body()?.token!!)
+                    DriverData.JWT = loginResponse.body()?.token!!
+                    DriverData.driverID = UUID.fromString(jwt.getClaim("driverID").asString())
+                } else {
+                    errorMessage.postValue(loginResponse.message())
+                }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact Login Server")
             }
-
         }
     }
-
 }

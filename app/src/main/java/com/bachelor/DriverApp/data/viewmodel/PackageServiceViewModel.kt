@@ -3,6 +3,7 @@ package com.bachelor.DriverApp.data.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bachelor.DriverApp.config.DriverData
 import com.bachelor.DriverApp.config.Urls.FAKE_SCENARIO
 import com.bachelor.DriverApp.data.models.packageservice.PackageData
 import com.bachelor.DriverApp.data.repository.ServiceBuilder
@@ -14,8 +15,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.random.Random
 
-object PackageServiceViewModel :ViewModel() {
+object PackageServiceViewModel : ViewModel() {
 
     private val packageService = ServiceBuilder().getPackageService()
 
@@ -28,32 +30,59 @@ object PackageServiceViewModel :ViewModel() {
             return field
         }
 
+    var deliveredPackageCounter = 0;
+
+    private val errorMessage = SingleLiveEvent<String>()
+    fun getErrorMessage(): SingleLiveEvent<String> {
+        return errorMessage
+    }
+
     init {
         this.packages.value = ArrayList()
     }
 
-    fun driverPickUp(packageID: UUID, driverId: UUID) {
+    fun driverPickUp(packageID: UUID) {
+        if (DriverData.testUser) {
+            addPackageDetails(packageID)
+            return
+        }
         viewModelScope.launch {
-            val jsonBody = DriverInRouteRequestBody(arrayListOf(packageID), driverId, FAKE_SCENARIO)
-            withContext(Dispatchers.IO) {
-                val inRouteResponse = packageService.inRoute(jsonBody)
+            val jsonBody = DriverInRouteRequestBody(arrayListOf(packageID),
+                DriverData.driverID!!, FAKE_SCENARIO)
+            try {
+                val inRouteResponse = withContext(Dispatchers.IO) {
+                    packageService.inRoute(jsonBody)
+                }
                 if (inRouteResponse.isSuccessful) {
                     addPackageDetails(packageID)
                 } else {
-
+                    errorMessage.postValue(inRouteResponse.message())
                 }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
-
         }
     }
 
     private fun addPackageDetails(packageID: UUID) {
+        if (DriverData.testUser) {
+            val packageData = PackageData(
+                "Test Adresse nr. 42 5000 Odense C",
+                12,
+                packageID,
+                Date(2021, 6, 1, Random.nextInt(8, 17),Random.nextInt(0, 60))
+            )
+            packages.value?.add(packageData)
+            return
+        }
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val packageDetailsResponse = packageService.getPackageDetails(packageID.toString())
+            try {
+                val packageDetailsResponse = withContext(Dispatchers.IO) {
+                    packageService.getPackageDetails(packageID.toString())
+                }
                 if (packageDetailsResponse.isSuccessful) {
-                    var responseBody = packageDetailsResponse.body()!!
-                    var packageData = PackageData(
+                    val responseBody = packageDetailsResponse.body()!!
+                    val packageData = PackageData(
                         responseBody.receiverAddress,
                         responseBody.weightKg,
                         responseBody.packageID,
@@ -62,27 +91,42 @@ object PackageServiceViewModel :ViewModel() {
 
                     packages.value?.add(packageData)
                 } else {
-                    // TODO: Handle errors
-                    print("Error")
+                    errorMessage.postValue(packageDetailsResponse.message())
                 }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
-
         }
     }
 
-    fun driverDelivery(packageIds: ArrayList<String>, driverId: String) {
+    fun driverDelivery(packageId: UUID?) {
+        if (DriverData.testUser) {
+            val deliveredPackage = packages.value?.find { packageData -> packageData.packageId == packageId }
+            if (deliveredPackage != null) {
+                deliveredPackage.delivered = true
+            }
+            return
+        }
         viewModelScope.launch {
-            val jsonBody = DriverDeliveryRequestBody(packageIds, driverId, FAKE_SCENARIO)
-            withContext(Dispatchers.IO) {
-                val deliveryResponse = packageService.deliver(jsonBody)
+            val packageIds = Array(1) { packageId }
+
+            val jsonBody = DriverDeliveryRequestBody(packageIds, DriverData.driverID.toString(), FAKE_SCENARIO)
+            try {
+                val deliveryResponse = withContext(Dispatchers.IO) {
+                    packageService.deliver(jsonBody)
+                }
                 if (deliveryResponse.isSuccessful) {
                     for (packageID in packageIds) {
-                        packages.value?.find { packageData -> packageData.packageId.equals(packageID) }
+                        val deliveredPackage = packages.value?.find { packageData -> packageData.packageId == packageID }
+                        if (deliveredPackage != null) {
+                            deliveredPackage.delivered = true
+                        }
                     }
                 } else {
-                    // TODO: handle errors
-                    print("Error2")
+                    errorMessage.postValue(deliveryResponse.message())
                 }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
         }
     }
@@ -91,22 +135,29 @@ object PackageServiceViewModel :ViewModel() {
     // this logic happens when someone orders an item from a webshop
     // this is only for demo and testing purposes
     fun registerNewPackage() {
+        if (DriverData.testUser) {
+            val packageId = UUID.randomUUID()
+            validPackageIDs.add(packageId)
+            driverPickUp(packageId)
+            return
+        }
         viewModelScope.launch {
             val jsonBody = RegisterPackageRequestBody()
-            withContext(Dispatchers.IO) {
-                val registerPackage = packageService.register(jsonBody)
-                if (registerPackage.isSuccessful) {
-                    validPackageIDs.add(registerPackage.body()?.packageID!!);
-                } else {
-                    // TODO: handle errors
-                    print("Error2")
+            try {
+                val registerPackageResponse = withContext(Dispatchers.IO) {
+                    packageService.register(jsonBody)
                 }
+                if (registerPackageResponse.isSuccessful) {
+                    val packageId = registerPackageResponse.body()?.packageID!!
+                    validPackageIDs.add(packageId)
+
+                    driverPickUp(packageId)
+                } else {
+                    errorMessage.postValue(registerPackageResponse.message())
+                }
+            } catch (e: Exception) {
+                errorMessage.postValue("Could not contact package server")
             }
         }
     }
-
-    fun getRandomValidPackageID() : UUID {
-        return validPackageIDs.random()
-    }
-
 }
