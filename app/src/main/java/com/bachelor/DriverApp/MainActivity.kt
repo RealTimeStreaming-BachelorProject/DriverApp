@@ -2,6 +2,7 @@ package com.bachelor.DriverApp
 
 import android.Manifest
 import android.app.Activity
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
@@ -10,9 +11,11 @@ import com.bachelor.DriverApp.ui.login.LoginFragment
 import android.view.MenuItem
 import android.view.View
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import com.bachelor.DriverApp.broadcastreceivers.BatteryCallback
 import com.bachelor.DriverApp.broadcastreceivers.LowBatteryReceiver
+import com.bachelor.DriverApp.services.LocationService
 import com.bachelor.DriverApp.ui.main.MainFragment
 import com.bachelor.DriverApp.ui.maps.MapsFragment
 import com.bachelor.DriverApp.ui.packages.PackagesFragment
@@ -55,12 +58,14 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         val receiver = LowBatteryReceiver()
         receiver.registerBatteryCallback(object : BatteryCallback {
             override fun onLowBattery() {
-                // TODO: Stop gps
+                val intent = Intent(baseContext, LocationService::class.java)
+                baseContext.stopService(intent)
                 Snackbar.make(parentLayout, "Battery at 15 %, stopping GPS", Snackbar.LENGTH_INDEFINITE).show()
             }
 
             override fun onOkayBattery() {
-                // TODO: start GPS up again
+                val intent = Intent(baseContext, LocationService::class.java)
+                baseContext.startForegroundService(intent)
                 Snackbar.make(parentLayout, "Battery okay, starting GPS again", Snackbar.LENGTH_SHORT).show()
             }
         })

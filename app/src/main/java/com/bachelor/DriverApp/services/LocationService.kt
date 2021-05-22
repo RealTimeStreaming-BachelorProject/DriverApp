@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
@@ -20,6 +21,7 @@ import com.bachelor.DriverApp.data.viewmodel.AuthEvent
 import com.bachelor.DriverApp.data.viewmodel.CoordEvent
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -133,7 +135,9 @@ class LocationService : Service() {
             opts.transports = arrayOf(WebSocket.NAME)
             mSocket = IO.socket(Urls.DRIVERS_URL, opts)
             mSocket.connect()
-            mSocket.on(Socket.EVENT_CONNECT_ERROR, { error -> println("SOCKETIO:  error"); println(error.forEach { err -> println(err.toString()) }) })
+            mSocket.on(Socket.EVENT_CONNECT_ERROR) { error ->
+                // TODO: broadcast error to some error handling
+            }
             mSocket.on(Socket.EVENT_CONNECT, { println("SOCKETIO: connected") })
             mSocket.on(Socket.EVENT_DISCONNECT, { println("SOCKETIO: disconnected") })
             var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5pY29sYWlncmFtIiwiZHJpdmVySUQiOiI2MjgzODhiMy1kYjM4LTQyMzgtOWRiYS00MjgyYmY2Y2E0ZmQifQ.UYPoCta13O-qpPa_oybbDU6S8FhClciM58efY0FZiwc"
