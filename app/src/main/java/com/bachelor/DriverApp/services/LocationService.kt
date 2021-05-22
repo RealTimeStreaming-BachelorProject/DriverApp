@@ -11,6 +11,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.IBinder
 import android.os.Looper
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LiveData
@@ -20,6 +21,7 @@ import com.bachelor.DriverApp.data.viewmodel.AuthEvent
 import com.bachelor.DriverApp.data.viewmodel.CoordEvent
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import io.socket.client.IO
 import io.socket.client.Socket
