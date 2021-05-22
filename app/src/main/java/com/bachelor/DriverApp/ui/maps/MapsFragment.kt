@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.graphics.Point
 import android.os.Bundle
 import android.os.Handler
@@ -13,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
@@ -26,6 +28,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.Snackbar
 
 
 class MapsFragment : Fragment() {
@@ -33,6 +36,8 @@ class MapsFragment : Fragment() {
     private var mapFragment: SupportMapFragment? = null
     private lateinit var mapMarker: Marker
     private lateinit var mapsViewModel: MapsViewModel
+    private lateinit var parentView: View
+    private lateinit var errorSnackBar: Snackbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +54,7 @@ class MapsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        parentView = view
         mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
         // Initial Google Maps
@@ -70,6 +76,7 @@ class MapsFragment : Fragment() {
         val intent = Intent(requireContext(), LocationService::class.java)
         requireContext().startForegroundService(intent)
         listenForLocationUpdates()
+        listenForConnectionErrors()
     }
 
     private fun listenForLocationUpdates() {
@@ -77,9 +84,25 @@ class MapsFragment : Fragment() {
             override fun onReceive(arg0: Context?, arg1: Intent) {
                 val newLatLng = arg1.extras!!.get("latlng")
                 updateMapLocation(newLatLng as LatLng)
+                // TODO: Hide snackbar is connection comes back?
             }
         }
         requireContext().registerReceiver(broadcastReceiver, IntentFilter("new_latlng"))
+    }
+
+    private fun listenForConnectionErrors() {
+        val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(arg0: Context?, arg1: Intent) {
+                val errorMessage = arg1.extras!!.getString("error_message")
+                println(errorMessage)
+                if (errorMessage == null) return;
+                // if (errorSnackBar != null) return; TODO: This crashes. Supposed to only make 1 errorSnackbar.
+                errorSnackBar = Snackbar.make(parentView, errorMessage, Snackbar.LENGTH_INDEFINITE);
+                errorSnackBar.setTextColor(Color.YELLOW)
+                errorSnackBar.show()
+            }
+        }
+        requireContext().registerReceiver(broadcastReceiver, IntentFilter("socket_error"))
     }
 
     private fun updateMapLocation(latLng: LatLng) {
