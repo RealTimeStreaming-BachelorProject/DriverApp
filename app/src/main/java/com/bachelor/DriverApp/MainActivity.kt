@@ -5,15 +5,15 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.bachelor.DriverApp.ui.login.LoginFragment
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.bachelor.DriverApp.broadcastreceivers.BatteryCallback
 import com.bachelor.DriverApp.broadcastreceivers.LowBatteryReceiver
 import com.bachelor.DriverApp.services.LocationService
+import com.bachelor.DriverApp.ui.login.LoginFragment
 import com.bachelor.DriverApp.ui.maps.MapsFragment
 import com.bachelor.DriverApp.ui.packages.PackagesFragment
 import com.bachelor.DriverApp.ui.scanner.ScannerFragment
@@ -25,10 +25,10 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     private var REQUEST_CODE_LOCATION = 2300
 
     // Shortcut to change fragment
-    private fun gotoFragment(fragment: Fragment) {
+    private fun gotoFragment(fragment: Fragment, nameOnStack: String?) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
-            .commitNow()
+            .commit()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         // Set default fragment
         if (savedInstanceState == null) {
-            gotoFragment(LoginFragment())
+            gotoFragment(LoginFragment(), "login_fragment")
         }
 
         requestPermissions()
@@ -60,7 +60,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             override fun onLowBattery() {
                 val intent = Intent(baseContext, LocationService::class.java)
                 baseContext.stopService(intent)
-
                 Snackbar.make(bottomNav, R.string.battery_unhealthy, Snackbar.LENGTH_LONG).apply {
                     anchorView = bottomNav
                 }.setTextColor(Color.RED).show()
@@ -97,7 +96,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         if (nextFragment == null) return false // Don't change fragment
 
-        gotoFragment(nextFragment)
+        gotoFragment(nextFragment, null)
         return true
     }
 
@@ -114,8 +113,9 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             ActivityCompat.requestPermissions(
                 this, arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION),
-                    REQUEST_CODE_LOCATION
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ),
+                REQUEST_CODE_LOCATION
             )
         }
 
