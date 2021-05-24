@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import com.bachelor.DriverApp.config.Urls
@@ -46,11 +47,20 @@ class LocationService : Service() {
         super.onCreate()
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+    private var isStarted = false
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (STOP_SELF_ACTION == intent?.action) {
             stopSelf()
+            isStarted = false
+            Log.i("Location Service", "Stopping Location Service")
         }
+
+        // Don't create new location if already started.
+        if (isStarted) return START_STICKY
+        if (!isStarted) isStarted = true
+
+        Log.i("Location Service", "Starting Location Service")
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         createNotificationChannel()
@@ -63,14 +73,14 @@ class LocationService : Service() {
             .setContentTitle(contentTitle)
             .setContentText(contentText)
             .setSmallIcon(R.mipmap.sym_def_app_icon)
-            .addAction(createAction(actionText))
+            .addAction(createStopServiceAction(actionText))
             .build()
         startForeground(1, notification)
 
         return START_STICKY
     }
 
-    private fun createAction(label: String): NotificationCompat.Action {
+    private fun createStopServiceAction(label: String): NotificationCompat.Action {
         val stopSelf = Intent(this, LocationService::class.java)
         stopSelf.action = STOP_SELF_ACTION
         val pendingIntent = PendingIntent.getService(
@@ -85,13 +95,6 @@ class LocationService : Service() {
         return action
     }
 
-    override fun onDestroy() {
-        println("Destroyed")
-        stopForeground(true)
-        stopSelf()
-        super.onDestroy()
-        removeLocationUpdates()
-    }
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -155,10 +158,6 @@ class LocationService : Service() {
         )
     }
 
-    private fun removeLocationUpdates() {
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-    }
-
     private fun createSocket() {
         try {
             val opts = IO.Options()
@@ -174,6 +173,7 @@ class LocationService : Service() {
             }
             mSocket.on(Socket.EVENT_CONNECT) { println("SOCKETIO: connected") }
             mSocket.on(Socket.EVENT_DISCONNECT) { println("SOCKETIO: disconnected") }
+
             var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5pY29sYWlncmFtIiwiZHJpdmVySUQiOiI2MjgzODhiMy1kYjM4LTQyMzgtOWRiYS00MjgyYmY2Y2E0ZmQifQ.UYPoCta13O-qpPa_oybbDU6S8FhClciM58efY0FZiwc"
             val gson = Gson()
             val obj = JSONObject(gson.toJson(AuthEvent(token)))
