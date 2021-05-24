@@ -83,10 +83,10 @@ class LoginFragment : Fragment() {
     }
 
     private fun switchToNextFragment() {
+
         val nextFragment = MapsFragment()
         val transaction = parentFragmentManager.beginTransaction()
         transaction.replace(R.id.fragment_container, nextFragment)
-        transaction.addToBackStack(null)
         transaction.commit()
     }
 
