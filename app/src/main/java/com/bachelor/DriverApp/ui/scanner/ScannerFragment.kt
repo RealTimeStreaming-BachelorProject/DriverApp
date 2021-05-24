@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.Toast
 import androidx.lifecycle.Observer
 import com.bachelor.DriverApp.R
 import com.bachelor.DriverApp.data.viewmodel.PackageServiceViewModel

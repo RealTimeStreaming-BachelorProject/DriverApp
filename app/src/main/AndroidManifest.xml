@@ -34,7 +34,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -44,8 +46,7 @@
         <service
             android:name=".services.LocationService"
             android:enabled="true"
-            android:foregroundServiceType="location"
-        ></service>
+            android:foregroundServiceType="location" />
 
         <receiver android:name=".broadcastreceivers.LowBatteryReceiver">
             <intent-filter>

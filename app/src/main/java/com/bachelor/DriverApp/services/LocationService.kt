@@ -2,33 +2,26 @@ package com.bachelor.DriverApp.services
 
 import android.Manifest
 import android.R
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.IBinder
 import android.os.Looper
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.bachelor.DriverApp.config.Urls
 import com.bachelor.DriverApp.data.viewmodel.AuthEvent
 import com.bachelor.DriverApp.data.viewmodel.CoordEvent
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.engineio.client.transports.WebSocket
 import org.json.JSONObject
 import java.net.URISyntaxException
-
 
 class LocationService : Service() {
 
@@ -135,16 +128,16 @@ class LocationService : Service() {
             opts.transports = arrayOf(WebSocket.NAME)
             mSocket = IO.socket(Urls.DRIVERS_URL, opts)
             mSocket.connect()
-            mSocket.on(Socket.EVENT_CONNECT_ERROR, { error ->
-                    println("SOCKETIO:  error");
-                    println(error.forEach { err -> println(err.toString())})
-                    val intent = Intent("socket_error");
-                    intent.putExtra("error_message", "Could not connect to GPS server.");
-                    sendBroadcast(intent);
-            })
-            mSocket.on(Socket.EVENT_CONNECT, { println("SOCKETIO: connected") })
-            mSocket.on(Socket.EVENT_DISCONNECT, { println("SOCKETIO: disconnected") })
-            var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5pY29sYWlncmFtIiwiZHJpdmVySUQiOiI2MjgzODhiMy1kYjM4LTQyMzgtOWRiYS00MjgyYmY2Y2E0ZmQifQ.UYPoCta13O-qpPa_oybbDU6S8FhClciM58efY0FZiwc"
+            mSocket.on(Socket.EVENT_CONNECT_ERROR) { error ->
+                println("SOCKETIO:  error");
+                println(error.forEach { err -> println(err.toString()) })
+                val intent = Intent("socket_error");
+                intent.putExtra("error_message", "Could not connect to GPS server.");
+                sendBroadcast(intent);
+            }
+            mSocket.on(Socket.EVENT_CONNECT) { println("SOCKETIO: connected") }
+            mSocket.on(Socket.EVENT_DISCONNECT) { println("SOCKETIO: disconnected") }
+            val token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5pY29sYWlncmFtIiwiZHJpdmVySUQiOiI2MjgzODhiMy1kYjM4LTQyMzgtOWRiYS00MjgyYmY2Y2E0ZmQifQ.UYPoCta13O-qpPa_oybbDU6S8FhClciM58efY0FZiwc"
             val gson = Gson()
             val obj = JSONObject(gson.toJson(AuthEvent(token)))
             mSocket.emit("authenticate", obj)
