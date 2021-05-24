@@ -1,5 +1,6 @@
 package com.bachelor.DriverApp.ui.scanner
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,6 +11,8 @@ import android.widget.Toast
 import androidx.lifecycle.Observer
 import com.bachelor.DriverApp.R
 import com.bachelor.DriverApp.data.viewmodel.PackageServiceViewModel
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.snackbar.Snackbar
 
 class ScannerFragment : Fragment() {
 
@@ -19,7 +22,7 @@ class ScannerFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-
+        val navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
         val root = inflater.inflate(R.layout.fragment_scanner, container, false)
 
         root.findViewById<Button>(R.id.packagePickUp).setOnClickListener {
@@ -33,13 +36,21 @@ class ScannerFragment : Fragment() {
                 packageServiceViewModel.driverDelivery(packageToDeliver?.packageId)
             }
             else {
-                Toast.makeText(root.context, "No packages to deliver", Toast.LENGTH_SHORT).show()
+                if (navBar != null) {
+                    Snackbar.make(navBar, "No packages to deliver", Snackbar.LENGTH_LONG).apply {
+                        anchorView = navBar
+                    }.setTextColor(Color.RED).show()
+                }
             }
         }
 
         packageServiceViewModel.getErrorMessage().observe(this, Observer {
-            Toast.makeText(root.context, it, Toast.LENGTH_SHORT).show()
+            if (navBar != null) {
+                Snackbar.make(navBar, it, Snackbar.LENGTH_LONG).apply {
+                    anchorView = navBar
+                }.setTextColor(Color.RED).show()
+            }
         })
-        return root;
+        return root
     }
 }

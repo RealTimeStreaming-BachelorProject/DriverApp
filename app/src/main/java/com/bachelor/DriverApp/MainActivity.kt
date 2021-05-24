@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.bachelor.DriverApp.ui.login.LoginFragment
@@ -46,8 +47,6 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         requestPermissions()
 
-        val parentLayout = findViewById<View>(android.R.id.content)
-
         // register receivers
         val filter = IntentFilter()
         filter.addAction("android.intent.action.BATTERY_LOW")
@@ -57,13 +56,19 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
             override fun onLowBattery() {
                 val intent = Intent(baseContext, LocationService::class.java)
                 baseContext.stopService(intent)
-                Snackbar.make(parentLayout, "Battery at 15 %, stopping GPS", Snackbar.LENGTH_INDEFINITE).show()
+
+                Snackbar.make(bottomNav, "Battery at or below 15 %, stopping GPS", Snackbar.LENGTH_LONG).apply {
+                    anchorView = bottomNav
+                }.setTextColor(Color.RED).show()
             }
 
             override fun onOkayBattery() {
                 val intent = Intent(baseContext, LocationService::class.java)
                 baseContext.startForegroundService(intent)
-                Snackbar.make(parentLayout, "Battery okay, starting GPS again", Snackbar.LENGTH_SHORT).show()
+
+                Snackbar.make(bottomNav, "Battery life okay, starting GPS", Snackbar.LENGTH_LONG).apply {
+                    anchorView = bottomNav
+                }.setTextColor(Color.GREEN).show()
             }
         })
         registerReceiver(receiver, filter);
