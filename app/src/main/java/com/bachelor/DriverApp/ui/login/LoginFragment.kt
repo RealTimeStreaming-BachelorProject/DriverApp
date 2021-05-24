@@ -9,16 +9,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.lifecycle.Observer
-import androidx.lifecycle.observe
-import com.bachelor.DriverApp.MainActivity
-
 import com.bachelor.DriverApp.R
-import com.bachelor.DriverApp.config.DriverData
 import com.bachelor.DriverApp.data.viewmodel.LoginServiceViewModel
-import com.bachelor.DriverApp.ui.main.MainFragment
-import com.google.android.material.bottomnavigation.BottomNavigationItemView
+import com.bachelor.DriverApp.ui.maps.MapsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 
@@ -40,7 +34,6 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         loginServiceViewModel = ViewModelProvider(this).get(LoginServiceViewModel::class.java)
         rootView = view
-        // TODO: check if JWT is present
 
         val usernameEditText = view.findViewById<EditText>(R.id.username)
         val passwordEditText = view.findViewById<EditText>(R.id.password)
@@ -68,18 +61,18 @@ class LoginFragment : Fragment() {
         loadingProgressBar.visibility = View.INVISIBLE
         Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
 
-        switchToMainFragment()
+        switchToNextFragment()
 
-        var navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
+        val navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
         if (navBar != null) {
             navBar.visibility = View.VISIBLE
         }
     }
 
-    private fun switchToMainFragment() {
-        val mainFragment = MainFragment()
+    private fun switchToNextFragment() {
+        val nextFragment = MapsFragment()
         val transaction = parentFragmentManager.beginTransaction()
-        transaction.replace(R.id.fragment_container, mainFragment)
+        transaction.replace(R.id.fragment_container, nextFragment)
         transaction.addToBackStack(null)
         transaction.commit()
     }

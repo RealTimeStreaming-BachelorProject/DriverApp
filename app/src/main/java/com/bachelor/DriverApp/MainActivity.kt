@@ -1,7 +1,6 @@
 package com.bachelor.DriverApp
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
@@ -11,12 +10,10 @@ import com.bachelor.DriverApp.ui.login.LoginFragment
 import android.view.MenuItem
 import android.view.View
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import com.bachelor.DriverApp.broadcastreceivers.BatteryCallback
 import com.bachelor.DriverApp.broadcastreceivers.LowBatteryReceiver
 import com.bachelor.DriverApp.services.LocationService
-import com.bachelor.DriverApp.ui.main.MainFragment
 import com.bachelor.DriverApp.ui.maps.MapsFragment
 import com.bachelor.DriverApp.ui.packages.PackagesFragment
 import com.bachelor.DriverApp.ui.scanner.ScannerFragment
@@ -28,7 +25,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
     private var REQUEST_CODE_LOCATION = 2300
 
     // Shortcut to change fragment
-    fun gotoFragment(fragment: Fragment) {
+    private fun gotoFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commitNow()
@@ -74,17 +71,19 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
     // Handle click on bottom navigation
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        var id = item.itemId
+        val id = item.itemId
         var nextFragment: Fragment? = null
 
-        if (id.equals(R.id.action_main)) {
-            nextFragment = MainFragment()
-        } else if (id.equals(R.id.action_map)) {
-            nextFragment = MapsFragment()
-        } else if (id.equals(R.id.action_packages)) {
-            nextFragment = PackagesFragment()
-        } else if (id.equals(R.id.action_scanner)) {
-            nextFragment = ScannerFragment()
+        when (id) {
+            R.id.action_map -> {
+                nextFragment = MapsFragment()
+            }
+            R.id.action_packages -> {
+                nextFragment = PackagesFragment()
+            }
+            R.id.action_scanner -> {
+                nextFragment = ScannerFragment()
+            }
         }
 
         if (nextFragment == null) return false // Don't change fragment

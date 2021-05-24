@@ -66,13 +66,6 @@ class MapsFragment : Fragment() {
             )
         }
 
-        mapsViewModel.latLng.observe(requireActivity()) { langLng ->
-            run {
-
-
-            }
-        }
-
         val intent = Intent(requireContext(), LocationService::class.java)
         requireContext().startForegroundService(intent)
         listenForLocationUpdates()
@@ -84,7 +77,7 @@ class MapsFragment : Fragment() {
             override fun onReceive(arg0: Context?, arg1: Intent) {
                 val newLatLng = arg1.extras!!.get("latlng")
                 updateMapLocation(newLatLng as LatLng)
-                // TODO: Hide snackbar is connection comes back?
+                // TODO: Hide snackbar if connection comes back?
             }
         }
         requireContext().registerReceiver(broadcastReceiver, IntentFilter("new_latlng"))
@@ -112,14 +105,14 @@ class MapsFragment : Fragment() {
         }
     }
 
-    fun animateMarker(
+    private fun animateMarker(
         marker: Marker, toPosition: LatLng,
         hideMarker: Boolean,
         googleMap: GoogleMap
     ) {
         val handler = Handler()
         val start = SystemClock.uptimeMillis()
-        val proj: Projection = googleMap.getProjection()
+        val proj: Projection = googleMap.projection
         val startPoint: Point = proj.toScreenLocation(marker.position)
         val startLatLng = proj.fromScreenLocation(startPoint)
         val duration: Long = 500
@@ -133,16 +126,12 @@ class MapsFragment : Fragment() {
                 )
                 val lng = t * toPosition.longitude + (1 - t) * startLatLng.longitude
                 val lat = t * toPosition.latitude + (1 - t) * startLatLng.latitude
-                marker.setPosition(LatLng(lat, lng))
+                marker.position = LatLng(lat, lng)
                 if (t < 1.0) {
                     // Post again 16ms later.
                     handler.postDelayed(this, 16)
                 } else {
-                    if (hideMarker) {
-                        marker.isVisible = false
-                    } else {
-                        marker.isVisible = true
-                    }
+                    marker.isVisible = !hideMarker
                 }
             }
         })
