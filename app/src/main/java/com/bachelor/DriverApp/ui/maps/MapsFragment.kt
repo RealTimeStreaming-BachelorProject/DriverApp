@@ -1,5 +1,6 @@
 package com.bachelor.DriverApp.ui.maps
 
+import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -28,6 +29,7 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
+
 
 class MapsFragment : Fragment() {
 
@@ -60,7 +62,12 @@ class MapsFragment : Fragment() {
             googleMap.animateCamera(CameraUpdateFactory.zoomTo(15.0f));
             mapMarker = googleMap.addMarker(
                 MarkerOptions()
-                    .position(LatLng(mapsViewModel.latLng.value!!.latitude, mapsViewModel.latLng.value!!.longitude))
+                    .position(
+                        LatLng(
+                            mapsViewModel.latLng.value!!.latitude,
+                            mapsViewModel.latLng.value!!.longitude
+                        )
+                    )
             )
         }
 
@@ -70,17 +77,26 @@ class MapsFragment : Fragment() {
         listenForConnectionErrors()
     }
 
+    override fun onResume() {
+        super.onResume()
+
+    }
+
     private fun listenForLocationUpdates() {
         val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(arg0: Context?, arg1: Intent) {
                 val newLatLng = arg1.extras!!.get("latlng")
                 updateMapLocation(newLatLng as LatLng)
-                // TODO: Hide snackbar if connection comes back?
+                if (errorSnackBar != null && errorSnackBar?.isShown() == true) {
+                    // Hide snackbar if connection comes back
+                    errorSnackBar?.dismiss()
+                }
             }
         }
         requireContext().registerReceiver(broadcastReceiver, IntentFilter("new_latlng"))
     }
 
+    // Show error if GPS service is not running locally. Doesn't break the app, but won't send coordinates to the server.
     private fun listenForConnectionErrors() {
         val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(arg0: Context?, arg1: Intent) {
