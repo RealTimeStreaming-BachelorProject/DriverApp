@@ -161,13 +161,13 @@ class LocationService : Service() {
             opts.transports = arrayOf(WebSocket.NAME)
             mSocket = IO.socket(Urls.DRIVERS_URL, opts)
             mSocket.connect()
-            mSocket.on(Socket.EVENT_CONNECT_ERROR, { error ->
+            mSocket.on(Socket.EVENT_CONNECT_ERROR) { error ->
                 println("SOCKETIO:  error");
                 println(error.forEach { err -> println(err.toString()) })
                 val intent = Intent("socket_error");
                 intent.putExtra("error_message", "Could not connect to GPS server.");
                 sendBroadcast(intent);
-            })
+            }
             mSocket.on(Socket.EVENT_CONNECT, { println("SOCKETIO: connected") })
             mSocket.on(Socket.EVENT_DISCONNECT, { println("SOCKETIO: disconnected") })
             var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5pY29sYWlncmFtIiwiZHJpdmVySUQiOiI2MjgzODhiMy1kYjM4LTQyMzgtOWRiYS00MjgyYmY2Y2E0ZmQifQ.UYPoCta13O-qpPa_oybbDU6S8FhClciM58efY0FZiwc"
