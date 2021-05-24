@@ -2,26 +2,21 @@ package com.bachelor.DriverApp.services
 
 import android.Manifest
 import android.R
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.IBinder
 import android.os.Looper
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.bachelor.DriverApp.config.Urls
 import com.bachelor.DriverApp.data.viewmodel.AuthEvent
 import com.bachelor.DriverApp.data.viewmodel.CoordEvent
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -39,12 +34,18 @@ class LocationService : Service() {
     private lateinit var mSocket: Socket
 
     private var notificationChannelId = "channel_1"
+    private var STOP_SELF_ACTION = "STOP_SELF"
 
     override fun onCreate() {
         super.onCreate()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+        if (STOP_SELF_ACTION.equals(intent?.action)) {
+            stopSelf()
+        }
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         createNotificationChannel()
         createSocket()
@@ -52,15 +53,32 @@ class LocationService : Service() {
         createLocationRequest()
         requestLocationUpdates()
 
+
+
         val notification = NotificationCompat.Builder(this, notificationChannelId)
             .setContentTitle("In Route")
             .setContentText("We're continuously sending your coordinates to our server.")
             .setSmallIcon(R.mipmap.sym_def_app_icon)
+            .addAction(createAction("Stop location service"))
             .build()
-        // .setContentIntent()
         startForeground(1, notification)
 
         return START_STICKY
+    }
+
+    private fun createAction(label: String): NotificationCompat.Action {
+        val stopSelf = Intent(this, LocationService::class.java)
+        stopSelf.action = STOP_SELF_ACTION
+        val pendingIntent = PendingIntent.getService(
+            this,
+            0,
+            stopSelf,
+            PendingIntent.FLAG_CANCEL_CURRENT
+        )
+        val action = NotificationCompat.Action.Builder(
+            0, label, pendingIntent
+        ).build()
+        return action
     }
 
     override fun onDestroy() {
@@ -96,7 +114,16 @@ class LocationService : Service() {
                     sendBroadcast(intent);
 
                     val gson = Gson()
-                    val obj = JSONObject(gson.toJson(CoordEvent(arrayOf(location.latitude, location.longitude))))
+                    val obj = JSONObject(
+                        gson.toJson(
+                            CoordEvent(
+                                arrayOf(
+                                    location.latitude,
+                                    location.longitude
+                                )
+                            )
+                        )
+                    )
                     mSocket.emit("new_coordinates", obj)
                 }
             }
@@ -136,11 +163,11 @@ class LocationService : Service() {
             mSocket = IO.socket(Urls.DRIVERS_URL, opts)
             mSocket.connect()
             mSocket.on(Socket.EVENT_CONNECT_ERROR, { error ->
-                    println("SOCKETIO:  error");
-                    println(error.forEach { err -> println(err.toString())})
-                    val intent = Intent("socket_error");
-                    intent.putExtra("error_message", "Could not connect to GPS server.");
-                    sendBroadcast(intent);
+                println("SOCKETIO:  error");
+                println(error.forEach { err -> println(err.toString()) })
+                val intent = Intent("socket_error");
+                intent.putExtra("error_message", "Could not connect to GPS server.");
+                sendBroadcast(intent);
             })
             mSocket.on(Socket.EVENT_CONNECT, { println("SOCKETIO: connected") })
             mSocket.on(Socket.EVENT_DISCONNECT, { println("SOCKETIO: disconnected") })
@@ -154,7 +181,11 @@ class LocationService : Service() {
     }
 
     private fun createNotificationChannel() {
-        val notificationChannel = NotificationChannel(notificationChannelId, "Foreground Notification", NotificationManager.IMPORTANCE_DEFAULT)
+        val notificationChannel = NotificationChannel(
+            notificationChannelId,
+            "Foreground Notification",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(notificationChannel)
     }

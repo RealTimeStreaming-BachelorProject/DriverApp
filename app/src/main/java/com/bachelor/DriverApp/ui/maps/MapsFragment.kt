@@ -37,7 +37,7 @@ class MapsFragment : Fragment() {
     private lateinit var mapMarker: Marker
     private lateinit var mapsViewModel: MapsViewModel
     private lateinit var parentView: View
-    private lateinit var errorSnackBar: Snackbar
+    private var errorSnackBar: Snackbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,11 +88,11 @@ class MapsFragment : Fragment() {
             override fun onReceive(arg0: Context?, arg1: Intent) {
                 val errorMessage = arg1.extras!!.getString("error_message")
                 println(errorMessage)
-                if (errorMessage == null) return;
-                // if (errorSnackBar != null) return; TODO: This crashes. Supposed to only make 1 errorSnackbar.
+                if (errorMessage == null) return
+                if (errorSnackBar != null) return
                 errorSnackBar = Snackbar.make(parentView, errorMessage, Snackbar.LENGTH_INDEFINITE);
-                errorSnackBar.setTextColor(Color.YELLOW)
-                errorSnackBar.show()
+                errorSnackBar?.setTextColor(Color.YELLOW)
+                errorSnackBar?.show()
             }
         }
         requireContext().registerReceiver(broadcastReceiver, IntentFilter("socket_error"))
