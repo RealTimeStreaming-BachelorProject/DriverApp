@@ -8,9 +8,18 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
-    <string name="menu_main">Main</string>
     <string name="menu_map">Map</string>
     <string name="menu_packages">Packages</string>
     <string name="menu_scanner">Scanner</string>
     <string name="sending_location">Sending Location</string>
+    <string name="no_packages">No packages to deliver</string>
+    <string name="battery_unhealthy">Battery at or below 15 %, stopping GPS</string>
+    <string name="battery_okay">Battery life okay, starting GPS</string>
+    <string name="missing_permissions">Permissions missing. Requesting permission</string>
+    <string name="in_route">In Route</string>
+    <string name="sending_coordinates">We are continuously sending your coordinates to our server</string>
+    <string name="stop_location_action">Stop location service</string>
+    <string name="coordinate_error">Could not connect to GPS server</string>
+    <string name="package_server_connection_error">Could not contact package server</string>
+    <string name="package_server_error">Error from server. We are looking into it</string>
 </resources>

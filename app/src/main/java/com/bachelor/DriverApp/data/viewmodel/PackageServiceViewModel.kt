@@ -3,6 +3,7 @@ package com.bachelor.DriverApp.data.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bachelor.DriverApp.R
 import com.bachelor.DriverApp.config.DriverData
 import com.bachelor.DriverApp.config.Urls.FAKE_SCENARIO
 import com.bachelor.DriverApp.data.models.packageservice.PackageData
@@ -32,8 +33,8 @@ object PackageServiceViewModel : ViewModel() {
 
     var deliveredPackageCounter = 0;
 
-    private val errorMessage = SingleLiveEvent<String>()
-    fun getErrorMessage(): SingleLiveEvent<String> {
+    private val errorMessage = SingleLiveEvent<Int>()
+    fun getErrorMessage(): SingleLiveEvent<Int> {
         return errorMessage
     }
 
@@ -56,10 +57,10 @@ object PackageServiceViewModel : ViewModel() {
                 if (inRouteResponse.isSuccessful) {
                     addPackageDetails(packageID)
                 } else {
-                    errorMessage.postValue(inRouteResponse.message())
+                    errorMessage.postValue(R.string.package_server_error)
                 }
             } catch (e: Exception) {
-                errorMessage.postValue("Could not contact package server")
+                errorMessage.postValue(R.string.package_server_connection_error)
             }
         }
     }
@@ -91,10 +92,10 @@ object PackageServiceViewModel : ViewModel() {
 
                     packages.value?.add(packageData)
                 } else {
-                    errorMessage.postValue(packageDetailsResponse.message())
+                    errorMessage.postValue(R.string.package_server_error)
                 }
             } catch (e: Exception) {
-                errorMessage.postValue("Could not contact package server")
+                errorMessage.postValue(R.string.package_server_connection_error)
             }
         }
     }
@@ -123,10 +124,10 @@ object PackageServiceViewModel : ViewModel() {
                         }
                     }
                 } else {
-                    errorMessage.postValue(deliveryResponse.message())
+                    errorMessage.postValue(R.string.package_server_error)
                 }
             } catch (e: Exception) {
-                errorMessage.postValue("Could not contact package server")
+                errorMessage.postValue(R.string.package_server_connection_error)
             }
         }
     }
@@ -153,10 +154,10 @@ object PackageServiceViewModel : ViewModel() {
 
                     driverPickUp(packageId)
                 } else {
-                    errorMessage.postValue(registerPackageResponse.message())
+                    errorMessage.postValue(R.string.package_server_error)
                 }
             } catch (e: Exception) {
-                errorMessage.postValue("Could not contact package server")
+                errorMessage.postValue(R.string.package_server_connection_error)
             }
         }
     }

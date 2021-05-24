@@ -84,11 +84,9 @@ class MapsFragment : Fragment() {
     private fun listenForConnectionErrors() {
         val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(arg0: Context?, arg1: Intent) {
-                val errorMessage = arg1.extras!!.getString("error_message")
-                if (errorMessage == null) return
+                val errorMessage = arg1.extras!!.getString("error_message") ?: return
                 if (errorSnackBar != null) return
-                val navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
-                if (navBar == null) return
+                val navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav) ?: return
                 errorSnackBar = Snackbar.make(navBar, errorMessage, Snackbar.LENGTH_INDEFINITE).apply {
                     anchorView = navBar
                 }

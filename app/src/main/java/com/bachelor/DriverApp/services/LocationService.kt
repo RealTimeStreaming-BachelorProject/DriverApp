@@ -35,13 +35,20 @@ class LocationService : Service() {
     private var notificationChannelId = "channel_1"
     private var STOP_SELF_ACTION = "STOP_SELF"
 
+    companion object StringValues {
+        var contentTitle: String = "In Route"
+        var contentText: String = "We're continuously sending your coordinates to our server."
+        var actionText: String = "Stop location service"
+        var errorMessage: String = "Could not connect to GPS server"
+    }
+
     override fun onCreate() {
         super.onCreate()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        if (STOP_SELF_ACTION.equals(intent?.action)) {
+        if (STOP_SELF_ACTION == intent?.action) {
             stopSelf()
         }
 
@@ -52,13 +59,11 @@ class LocationService : Service() {
         createLocationRequest()
         requestLocationUpdates()
 
-
-
         val notification = NotificationCompat.Builder(this, notificationChannelId)
-            .setContentTitle("In Route")
-            .setContentText("We're continuously sending your coordinates to our server.")
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
             .setSmallIcon(R.mipmap.sym_def_app_icon)
-            .addAction(createAction("Stop location service"))
+            .addAction(createAction(actionText))
             .build()
         startForeground(1, notification)
 
@@ -139,7 +144,6 @@ class LocationService : Service() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            println("NO PERMISSION!!!")
             return
         }
         /* END - PERMISSION CHECK */
@@ -161,15 +165,15 @@ class LocationService : Service() {
             opts.transports = arrayOf(WebSocket.NAME)
             mSocket = IO.socket(Urls.DRIVERS_URL, opts)
             mSocket.connect()
-            mSocket.on(Socket.EVENT_CONNECT_ERROR, { error ->
+            mSocket.on(Socket.EVENT_CONNECT_ERROR) { error ->
                 println("SOCKETIO:  error");
                 println(error.forEach { err -> println(err.toString()) })
                 val intent = Intent("socket_error");
-                intent.putExtra("error_message", "Could not connect to GPS server.");
-                sendBroadcast(intent);
-            })
-            mSocket.on(Socket.EVENT_CONNECT, { println("SOCKETIO: connected") })
-            mSocket.on(Socket.EVENT_DISCONNECT, { println("SOCKETIO: disconnected") })
+                intent.putExtra("error_message", errorMessage);
+                sendBroadcast(intent)
+            }
+            mSocket.on(Socket.EVENT_CONNECT) { println("SOCKETIO: connected") }
+            mSocket.on(Socket.EVENT_DISCONNECT) { println("SOCKETIO: disconnected") }
             var token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5pY29sYWlncmFtIiwiZHJpdmVySUQiOiI2MjgzODhiMy1kYjM4LTQyMzgtOWRiYS00MjgyYmY2Y2E0ZmQifQ.UYPoCta13O-qpPa_oybbDU6S8FhClciM58efY0FZiwc"
             val gson = Gson()
             val obj = JSONObject(gson.toJson(AuthEvent(token)))

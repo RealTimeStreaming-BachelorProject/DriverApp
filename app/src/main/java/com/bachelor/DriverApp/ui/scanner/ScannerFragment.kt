@@ -36,7 +36,7 @@ class ScannerFragment : Fragment() {
             }
             else {
                 if (navBar != null) {
-                    Snackbar.make(navBar, "No packages to deliver", Snackbar.LENGTH_LONG).apply {
+                    Snackbar.make(navBar, R.string.no_packages, Snackbar.LENGTH_LONG).apply {
                         anchorView = navBar
                     }.setTextColor(Color.RED).show()
                 }
@@ -45,7 +45,7 @@ class ScannerFragment : Fragment() {
 
         packageServiceViewModel.getErrorMessage().observe(this, Observer {
             if (navBar != null) {
-                Snackbar.make(navBar, it, Snackbar.LENGTH_LONG).apply {
+                Snackbar.make(navBar, getString(it), Snackbar.LENGTH_LONG).apply {
                     anchorView = navBar
                 }.setTextColor(Color.RED).show()
             }

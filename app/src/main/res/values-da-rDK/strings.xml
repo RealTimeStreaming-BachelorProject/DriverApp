@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DriverApp</string>
+    <string name="prompt_username">Brugernavn</string>
+    <string name="prompt_password">Kodeord</string>
+    <string name="action_sign_in">Log Ind</string>
+    <string name="action_sign_in_short">Log Ind</string>
+    <string name="welcome">Velkommen!</string>
+    <string name="invalid_username">Ugyldigt brugernavn</string>
+    <string name="invalid_password">Kode skal have mindst 6 karakterer</string>
+    <string name="login_failed">Ugyldigt Login</string>
+    <string name="menu_map">Kort</string>
+    <string name="menu_packages">Pakker</string>
+    <string name="menu_scanner">Skanner</string>
+    <string name="sending_location">Sender Lokation</string>
+    <string name="no_packages">Ingen pakker tilbage</string>
+    <string name="battery_unhealthy">Lavt batteri, stopper GPS</string>
+    <string name="battery_okay">Battery levetid er okay, starter GPS</string>
+    <string name="missing_permissions">Manglende rettigheder. Spørger om rettigheder</string>
+    <string name="in_route">Rute påbegyndt</string>
+    <string name="sending_coordinates">Vi sender dine koordinater til vores server</string>
+    <string name="stop_location_action">Stop koordinat afsendelse</string>
+    <string name="coordinate_error">Kunne ikke forbinde til koordinat serveren</string>
+    <string name="package_server_connection_error">Kan ikke oprette forbindelse til serveren</string>
+    <string name="package_server_error">Fejl fra server. Vi undersøger fejlen</string>
+</resources>

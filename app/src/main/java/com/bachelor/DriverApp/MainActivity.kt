@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.bachelor.DriverApp.ui.login.LoginFragment
 import android.view.MenuItem
-import android.view.View
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.bachelor.DriverApp.broadcastreceivers.BatteryCallback
@@ -36,6 +35,11 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
+        LocationService.actionText = getString(R.string.stop_location_action)
+        LocationService.contentText = getString(R.string.sending_coordinates)
+        LocationService.actionText = getString(R.string.stop_location_action)
+        LocationService.errorMessage = getString(R.string.coordinate_error)
+
         // Bind bottom nav to this activity
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_nav)
         bottomNav.setOnNavigationItemSelectedListener(this)
@@ -57,7 +61,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 val intent = Intent(baseContext, LocationService::class.java)
                 baseContext.stopService(intent)
 
-                Snackbar.make(bottomNav, "Battery at or below 15 %, stopping GPS", Snackbar.LENGTH_LONG).apply {
+                Snackbar.make(bottomNav, R.string.battery_unhealthy, Snackbar.LENGTH_LONG).apply {
                     anchorView = bottomNav
                 }.setTextColor(Color.RED).show()
             }
@@ -66,7 +70,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
                 val intent = Intent(baseContext, LocationService::class.java)
                 baseContext.startForegroundService(intent)
 
-                Snackbar.make(bottomNav, "Battery life okay, starting GPS", Snackbar.LENGTH_LONG).apply {
+                Snackbar.make(bottomNav, R.string.battery_okay, Snackbar.LENGTH_LONG).apply {
                     anchorView = bottomNav
                 }.setTextColor(Color.GREEN).show()
             }
@@ -106,7 +110,7 @@ class MainActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemS
 
         )
         {
-            println("Permissions missing. Requesting permission.")
+            println(R.string.missing_permissions)
             ActivityCompat.requestPermissions(
                 this, arrayOf(
                     Manifest.permission.ACCESS_COARSE_LOCATION,
