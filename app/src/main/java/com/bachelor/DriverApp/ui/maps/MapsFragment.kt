@@ -28,6 +28,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -87,10 +88,13 @@ class MapsFragment : Fragment() {
         val broadcastReceiver: BroadcastReceiver = object : BroadcastReceiver() {
             override fun onReceive(arg0: Context?, arg1: Intent) {
                 val errorMessage = arg1.extras!!.getString("error_message")
-                println(errorMessage)
                 if (errorMessage == null) return
                 if (errorSnackBar != null) return
-                errorSnackBar = Snackbar.make(parentView, errorMessage, Snackbar.LENGTH_INDEFINITE);
+                val navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
+                if (navBar == null) return
+                errorSnackBar = Snackbar.make(navBar, errorMessage, Snackbar.LENGTH_INDEFINITE).apply {
+                    anchorView = navBar
+                }
                 errorSnackBar?.setTextColor(Color.YELLOW)
                 errorSnackBar?.show()
             }

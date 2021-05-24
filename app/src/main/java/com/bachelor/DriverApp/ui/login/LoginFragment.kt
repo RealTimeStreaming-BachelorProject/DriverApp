@@ -2,6 +2,8 @@ package com.bachelor.DriverApp.ui.login
 
 import android.app.Activity
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import androidx.fragment.app.Fragment
 import android.os.Bundle
@@ -71,12 +73,11 @@ class LoginFragment : Fragment() {
     }
 
     private fun successfulLogin(message: String) {
-        loadingProgressBar.visibility = View.INVISIBLE
-        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
-
         switchToNextFragment()
 
         val navBar = activity?.findViewById<BottomNavigationView>(R.id.bottom_nav)
+        loadingProgressBar.visibility = View.INVISIBLE
+
         if (navBar != null) {
             navBar.visibility = View.VISIBLE
         }
@@ -92,6 +93,6 @@ class LoginFragment : Fragment() {
 
     private fun showLoginFailed(message: String) {
         loadingProgressBar.visibility = View.INVISIBLE
-        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show()
+        Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).setTextColor(Color.RED).show()
     }
 }
