@@ -13,4 +13,6 @@
     <string name="menu_packages">Packages</string>
     <string name="menu_scanner">Scanner</string>
     <string name="sending_location">Sending Location</string>
+    <string name="btn_start_service">Start Service</string>
+    <string name="btn_stop_service">Stop Service</string>
 </resources>

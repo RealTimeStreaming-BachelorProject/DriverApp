@@ -15,6 +15,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
+import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.bachelor.DriverApp.R
@@ -38,6 +39,8 @@ class MapsFragment : Fragment() {
     private lateinit var mapsViewModel: MapsViewModel
     private lateinit var parentView: View
     private var errorSnackBar: Snackbar? = null
+    private lateinit var btnStartService: Button
+    private var isServiceStarted = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,15 +74,36 @@ class MapsFragment : Fragment() {
             )
         }
 
+        btnStartService = requireView().findViewById<Button>(R.id.btn_start_service)
+        btnStartService.setOnClickListener{
+            if (!isServiceStarted) {
+                startLocationService()
+                btnStartService.setText(R.string.btn_stop_service)
+                isServiceStarted = true
+            } else {
+                stopLocationService()
+                btnStartService.setText(R.string.btn_start_service)
+                isServiceStarted = false
+            }
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+    }
+
+    private fun startLocationService() {
         val intent = Intent(requireContext(), LocationService::class.java)
         requireContext().startForegroundService(intent)
         listenForLocationUpdates()
         listenForConnectionErrors()
     }
 
-    override fun onResume() {
-        super.onResume()
-
+    private fun stopLocationService() {
+        val intent = Intent(requireContext(), LocationService::class.java)
+        requireContext().stopService(intent)
     }
 
     private fun listenForLocationUpdates() {
