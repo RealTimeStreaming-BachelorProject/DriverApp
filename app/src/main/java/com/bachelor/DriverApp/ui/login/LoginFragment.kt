@@ -2,7 +2,6 @@ package com.bachelor.DriverApp.ui.login
 
 import android.app.Activity
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Color
 import androidx.lifecycle.ViewModelProvider
 import androidx.fragment.app.Fragment

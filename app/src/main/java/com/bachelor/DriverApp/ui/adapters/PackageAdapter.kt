@@ -5,11 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 import com.bachelor.DriverApp.R
 import com.bachelor.DriverApp.data.models.packageservice.PackageData
-import com.google.android.material.snackbar.Snackbar
 import java.time.LocalTime
 
 class PackageAdapter(packages: ArrayList<PackageData>) : RecyclerView.Adapter<PackageAdapter.ViewHolder>() {
@@ -42,8 +40,8 @@ class PackageAdapter(packages: ArrayList<PackageData>) : RecyclerView.Adapter<Pa
     }
 
     class ViewHolder(view : View) : RecyclerView.ViewHolder(view) {
-        var packageAddress = view.findViewById<TextView>(R.id.packageAddress)
-        var estimatedDeliveryTime = view.findViewById<TextView>(R.id.estimatedDeliveryTime)
-        var deliveryStatus = view.findViewById<ImageView>(R.id.deliveredStatus)
+        var packageAddress: TextView = view.findViewById(R.id.packageAddress)
+        var estimatedDeliveryTime: TextView = view.findViewById(R.id.estimatedDeliveryTime)
+        var deliveryStatus: ImageView = view.findViewById(R.id.deliveredStatus)
     }
 }

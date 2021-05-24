@@ -14,10 +14,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Interpolator
 import android.view.animation.LinearInterpolator
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.observe
 import com.bachelor.DriverApp.R
 import com.bachelor.DriverApp.data.viewmodel.MapsViewModel
 import com.bachelor.DriverApp.services.LocationService
@@ -30,7 +28,6 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
-
 
 class MapsFragment : Fragment() {
 

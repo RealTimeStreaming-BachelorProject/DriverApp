@@ -24,7 +24,6 @@ import io.socket.engineio.client.transports.WebSocket
 import org.json.JSONObject
 import java.net.URISyntaxException
 
-
 class LocationService : Service() {
 
     private lateinit var locationCallback: LocationCallback
