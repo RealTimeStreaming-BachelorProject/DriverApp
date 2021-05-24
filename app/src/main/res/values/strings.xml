@@ -22,4 +22,6 @@
     <string name="coordinate_error">Could not connect to GPS server</string>
     <string name="package_server_connection_error">Could not contact package server</string>
     <string name="package_server_error">Error from server. We are looking into it</string>
+    <string name="btn_start_service">Start Service</string>
+    <string name="btn_stop_service">Stop Service</string>
 </resources>

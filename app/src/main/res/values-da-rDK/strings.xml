@@ -23,4 +23,6 @@
     <string name="coordinate_error">Kunne ikke forbinde til koordinat serveren</string>
     <string name="package_server_connection_error">Kan ikke oprette forbindelse til serveren</string>
     <string name="package_server_error">Fejl fra server. Vi undersøger fejlen</string>
+    <string name="btn_start_service">Start Koordinat Indsamling</string>
+    <string name="btn_stop_service">Stop Koordinat Indsamling</string>
 </resources>
